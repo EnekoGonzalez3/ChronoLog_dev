@@ -4,6 +4,7 @@ on:
   schedule:
     # Runs every Sunday at 11:55 PM UTC
     - cron: "55 23 * * 0"
+  workflow_dispatch:
 
 jobs:
   traffic:
