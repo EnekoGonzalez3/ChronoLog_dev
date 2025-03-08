@@ -10,6 +10,7 @@
 
 #include "chronolog_types.h"
 #include "StoryChunkExtractionQueue.h"
+#include "chronolog_errcode.h"
 #include "chrono_monitor.h"
 
 
@@ -46,7 +47,7 @@ public:
 
     void drainExtractionQueue();
 
-    virtual int processStoryChunk(StoryChunk*)  = 0;
+    virtual int processStoryChunk(StoryChunk*)  =0;
 
     void startExtractionThreads(int);
 
