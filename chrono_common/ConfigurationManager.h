@@ -42,7 +42,6 @@ typedef struct AuthConf_
 
 typedef struct RPCProviderConf_
 {
-    ChronoLogRPCImplementation RPC_IMPLEMENTATION;
     std::string PROTO_CONF;
     std::string IP;
     uint16_t BASE_PORT;
@@ -50,7 +49,7 @@ typedef struct RPCProviderConf_
 
     [[nodiscard]] std::string to_String() const
     {
-        return "[RPC_IMPLEMENTATION: " + std::string(getRPCImplString(RPC_IMPLEMENTATION)) + ", PROTO_CONF: " +
+        return "[PROTO_CONF: " +
                PROTO_CONF + ", IP: " + IP + ", BASE_PORT: " + std::to_string(BASE_PORT) + ", SERVICE_PROVIDER_ID: " +
                std::to_string(SERVICE_PROVIDER_ID) + ", PORTS: " + "]";
     }
@@ -229,14 +228,68 @@ typedef struct GrapherConf_
     }
 } GrapherConf;
 
+typedef struct DataStoreAdminServiceConf_
+{
+    RPCProviderConf RPC_CONF;
+
+    [[nodiscard]] std::string to_String() const
+    {
+        return "[RPC_CONF: " + RPC_CONF.to_String() + "]";
+    }
+} DataStoreAdminServiceConf;
+
+
+typedef struct PlayerConf_
+{
+    uint32_t RECORDING_GROUP;
+    RPCProviderConf DATA_STORE_ADMIN_SERVICE_CONF;
+    RPCProviderConf PLAYBACK_SERVICE_CONF;
+    RPCProviderConf VISOR_REGISTRY_SERVICE_CONF;
+    LogConf LOG_CONF;
+    DataStoreConf  DATA_STORE_CONF;
+
+    PlayerConf_()
+    {
+        /* Grapher-related configurations */
+        RECORDING_GROUP = 0;
+        DATA_STORE_ADMIN_SERVICE_CONF.PROTO_CONF = "ofi+sockets";
+        DATA_STORE_ADMIN_SERVICE_CONF.IP = "127.0.0.1";
+        DATA_STORE_ADMIN_SERVICE_CONF.BASE_PORT = 2222;
+        DATA_STORE_ADMIN_SERVICE_CONF.SERVICE_PROVIDER_ID = 22;
+
+        PLAYBACK_SERVICE_CONF.PROTO_CONF = "ofi+sockets";
+        PLAYBACK_SERVICE_CONF.IP = "127.0.0.1";
+        PLAYBACK_SERVICE_CONF.BASE_PORT = 2225;
+        PLAYBACK_SERVICE_CONF.SERVICE_PROVIDER_ID = 25;
+
+        VISOR_REGISTRY_SERVICE_CONF.PROTO_CONF = "ofi+sockets";
+        VISOR_REGISTRY_SERVICE_CONF.IP = "127.0.0.1";
+        VISOR_REGISTRY_SERVICE_CONF.BASE_PORT = 8888;
+        VISOR_REGISTRY_SERVICE_CONF.SERVICE_PROVIDER_ID = 88;
+    }
+
+    [[nodiscard]] std::string to_String() const
+    {
+        return "[CHRONO_PLAYER_CONFIGURATION : RECORDING_GROUP: "+ std::to_string(RECORDING_GROUP) +
+               ", DATA_STORE_ADMIN_SERVICE_CONF: " + DATA_STORE_ADMIN_SERVICE_CONF.to_String() +
+               ", PLAYBACK_SERVICE_CONF: " + PLAYBACK_SERVICE_CONF.to_String() +
+               ", VISOR_REGISTRY_SERVICE_CONF: " + VISOR_REGISTRY_SERVICE_CONF.to_String() +
+               ", LOG_CONF:" + LOG_CONF.to_String() +
+               ", " + DATA_STORE_CONF.to_String() +
+               "]";
+    }
+} PlayerConf;
+
 typedef struct ClientConf_
 {
+    RPCProviderConf CLIENT_QUERY_SERVICE_CONF;
     VisorClientPortalServiceConf VISOR_CLIENT_PORTAL_SERVICE_CONF;
     LogConf CLIENT_LOG_CONF;
 
     [[nodiscard]] std::string to_String() const
     {
-        return "[VISOR_CLIENT_PORTAL_SERVICE_CONF: " + VISOR_CLIENT_PORTAL_SERVICE_CONF.to_String() +
+        return "[CLIENT_QUERY_SERVICE_CONF: " + CLIENT_QUERY_SERVICE_CONF.to_String() +
+            ", [VISOR_CLIENT_PORTAL_SERVICE_CONF: " + VISOR_CLIENT_PORTAL_SERVICE_CONF.to_String() +
                ", CLIENT_LOG_CONF:" + CLIENT_LOG_CONF.to_String() + "]";
     }
 } ClientConf;
@@ -252,6 +305,7 @@ public:
     ClientConf CLIENT_CONF{};
     KeeperConf KEEPER_CONF{};
     GrapherConf GRAPHER_CONF{};
+    PlayerConf PLAYER_CONF{};
 
     ConfigurationManager()
     {
@@ -269,13 +323,11 @@ public:
         AUTH_CONF.MODULE_PATH = "";
 
         /* Visor-related configurations */
-        VISOR_CONF.VISOR_CLIENT_PORTAL_SERVICE_CONF.RPC_CONF.RPC_IMPLEMENTATION = CHRONOLOG_THALLIUM_SOCKETS;
         VISOR_CONF.VISOR_CLIENT_PORTAL_SERVICE_CONF.RPC_CONF.PROTO_CONF = "ofi+sockets";
         VISOR_CONF.VISOR_CLIENT_PORTAL_SERVICE_CONF.RPC_CONF.IP = "127.0.0.1";
         VISOR_CONF.VISOR_CLIENT_PORTAL_SERVICE_CONF.RPC_CONF.BASE_PORT = 5555;
         VISOR_CONF.VISOR_CLIENT_PORTAL_SERVICE_CONF.RPC_CONF.SERVICE_PROVIDER_ID = 55;
 
-        VISOR_CONF.VISOR_KEEPER_REGISTRY_SERVICE_CONF.RPC_CONF.RPC_IMPLEMENTATION = CHRONOLOG_THALLIUM_SOCKETS;
         VISOR_CONF.VISOR_KEEPER_REGISTRY_SERVICE_CONF.RPC_CONF.PROTO_CONF = "ofi+sockets";
         VISOR_CONF.VISOR_KEEPER_REGISTRY_SERVICE_CONF.RPC_CONF.IP = "127.0.0.1";
         VISOR_CONF.VISOR_KEEPER_REGISTRY_SERVICE_CONF.RPC_CONF.BASE_PORT = 8888;
@@ -285,19 +337,16 @@ public:
 
         /* Keeper-related configurations */
         KEEPER_CONF.RECORDING_GROUP = 0;
-        KEEPER_CONF.KEEPER_RECORDING_SERVICE_CONF.RPC_CONF.RPC_IMPLEMENTATION = CHRONOLOG_THALLIUM_SOCKETS;
         KEEPER_CONF.KEEPER_RECORDING_SERVICE_CONF.RPC_CONF.PROTO_CONF = "ofi+sockets";
         KEEPER_CONF.KEEPER_RECORDING_SERVICE_CONF.RPC_CONF.IP = "127.0.0.1";
         KEEPER_CONF.KEEPER_RECORDING_SERVICE_CONF.RPC_CONF.BASE_PORT = 6666;
         KEEPER_CONF.KEEPER_RECORDING_SERVICE_CONF.RPC_CONF.SERVICE_PROVIDER_ID = 66;
 
-        KEEPER_CONF.KEEPER_DATA_STORE_ADMIN_SERVICE_CONF.RPC_CONF.RPC_IMPLEMENTATION = CHRONOLOG_THALLIUM_SOCKETS;
         KEEPER_CONF.KEEPER_DATA_STORE_ADMIN_SERVICE_CONF.RPC_CONF.PROTO_CONF = "ofi+sockets";
         KEEPER_CONF.KEEPER_DATA_STORE_ADMIN_SERVICE_CONF.RPC_CONF.IP = "127.0.0.1";
         KEEPER_CONF.KEEPER_DATA_STORE_ADMIN_SERVICE_CONF.RPC_CONF.BASE_PORT = 7777;
         KEEPER_CONF.KEEPER_DATA_STORE_ADMIN_SERVICE_CONF.RPC_CONF.SERVICE_PROVIDER_ID = 77;
 
-        KEEPER_CONF.VISOR_KEEPER_REGISTRY_SERVICE_CONF.RPC_CONF.RPC_IMPLEMENTATION = CHRONOLOG_THALLIUM_SOCKETS;
         KEEPER_CONF.VISOR_KEEPER_REGISTRY_SERVICE_CONF.RPC_CONF.PROTO_CONF = "ofi+sockets";
         KEEPER_CONF.VISOR_KEEPER_REGISTRY_SERVICE_CONF.RPC_CONF.IP = "127.0.0.1";
         KEEPER_CONF.VISOR_KEEPER_REGISTRY_SERVICE_CONF.RPC_CONF.BASE_PORT = 8888;
@@ -307,14 +356,12 @@ public:
 
         /* Grapher-related configurations */
         GRAPHER_CONF.RECORDING_GROUP = 0;
-        GRAPHER_CONF.KEEPER_GRAPHER_DRAIN_SERVICE_CONF.RPC_IMPLEMENTATION = CHRONOLOG_THALLIUM_SOCKETS;
         GRAPHER_CONF.KEEPER_GRAPHER_DRAIN_SERVICE_CONF.PROTO_CONF = "ofi+sockets";
         GRAPHER_CONF.KEEPER_GRAPHER_DRAIN_SERVICE_CONF.IP = "127.0.0.1";
         GRAPHER_CONF.KEEPER_GRAPHER_DRAIN_SERVICE_CONF.BASE_PORT = 9999;
         GRAPHER_CONF.KEEPER_GRAPHER_DRAIN_SERVICE_CONF.SERVICE_PROVIDER_ID = 99;
 
         /* Client-related configurations */
-        CLIENT_CONF.VISOR_CLIENT_PORTAL_SERVICE_CONF.RPC_CONF.RPC_IMPLEMENTATION = CHRONOLOG_THALLIUM_SOCKETS;
         CLIENT_CONF.VISOR_CLIENT_PORTAL_SERVICE_CONF.RPC_CONF.PROTO_CONF = "ofi+sockets";
         CLIENT_CONF.VISOR_CLIENT_PORTAL_SERVICE_CONF.RPC_CONF.BASE_PORT = 5555;
         CLIENT_CONF.VISOR_CLIENT_PORTAL_SERVICE_CONF.RPC_CONF.SERVICE_PROVIDER_ID = 55;
@@ -331,11 +378,11 @@ public:
     void PrintConf() const
     {
         std::cout << "******** Start of configuration output ********" << std::endl;
-        std::cout << "CLOCK_CONF: " << CLOCK_CONF.to_String().c_str() << std::endl;
         std::cout << "AUTH_CONF: " << AUTH_CONF.to_String().c_str() << std::endl;
         std::cout << "VISOR_CONF: " << VISOR_CONF.to_String().c_str() << std::endl;
         std::cout << "KEEPER_CONF: " << KEEPER_CONF.to_String().c_str() << std::endl;
         std::cout << "GRAPHER_CONF: " << GRAPHER_CONF.to_String().c_str() << std::endl;
+        std::cout << "PLAYER_CONF: " << PLAYER_CONF.to_String().c_str() << std::endl;
         std::cout << "CLIENT_CONF: " << CLIENT_CONF.to_String().c_str() << std::endl;
         std::cout << "******** End of configuration output ********" << std::endl;
     }
@@ -412,6 +459,18 @@ public:
                 }
                 parseGrapherConf(chrono_grapher_conf);
             }
+            else if(strcmp(key, "chrono_player") == 0)
+            {
+                json_object*chrono_player_conf = json_object_object_get(root, "chrono_player");
+                if(chrono_player_conf == nullptr || !json_object_is_type(chrono_player_conf, json_type_object))
+                {
+                    std::cerr << "[ConfigurationManager] Error while parsing configuration file "
+                              << conf_file_path.c_str()
+                              << ". ChronoPlayer configuration is not found or is not an object." << std::endl;
+                    exit(chronolog::CL_ERR_INVALID_CONF);
+                }
+                parsePlayerConf(chrono_player_conf);
+            }
             else if(strcmp(key, "chrono_client") == 0)
             {
                 json_object*chrono_client_conf = json_object_object_get(root, "chrono_client");
@@ -434,7 +493,7 @@ public:
     }
 
 private:
-    void parseRPCImplConf(json_object*json_conf, ChronoLogRPCImplementation &rpc_impl)
+  /*  void parseRPCImplConf(json_object*json_conf, ChronoLogRPCImplementation &rpc_impl)
     {
         if(json_object_is_type(json_conf, json_type_string))
         {
@@ -461,7 +520,7 @@ private:
             std::cerr << "[ConfigurationManager] Invalid rpc implementation configuration" << std::endl;
         }
     }
-
+*/
     void parselogLevelConf(json_object*json_conf, spdlog::level::level_enum &log_level)
     {
         if(json_object_is_type(json_conf, json_type_string))
@@ -655,12 +714,7 @@ private:
     {
         json_object_object_foreach(json_conf, key, val)
         {
-            if(strcmp(key, "rpc_implementation") == 0)
-            {
-                assert(json_object_is_type(val, json_type_string));
-                parseRPCImplConf(val, rpc_provider_conf.RPC_IMPLEMENTATION);
-            }
-            else if(strcmp(key, "protocol_conf") == 0)
+            if(strcmp(key, "protocol_conf") == 0)
             {
                 assert(json_object_is_type(val, json_type_string));
                 rpc_provider_conf.PROTO_CONF = json_object_get_string(val);
@@ -773,13 +827,13 @@ private:
                     }
                 }
             }
-            else if(strcmp(key, "Logging") == 0)
+            else if(strcmp(key, "Monitoring") == 0)
             {
                 assert(json_object_is_type(val, json_type_object));
-                json_object*chronovisor_log = json_object_object_get(json_conf, "Logging");
+                json_object*chronovisor_log = json_object_object_get(json_conf, "Monitoring");
                 json_object_object_foreach(chronovisor_log, key, val)
                 {
-                    if(strcmp(key, "log") == 0)
+                    if(strcmp(key, "monitor") == 0)
                     {
                         parseLogConf(val, VISOR_CONF.VISOR_LOG_CONF);
                     }
@@ -884,13 +938,13 @@ private:
                     }
                 }
             }
-            else if(strcmp(key, "Logging") == 0)
+            else if(strcmp(key, "Monitoring") == 0)
             {
                 assert(json_object_is_type(val, json_type_object));
-                json_object*chronokeeper_log = json_object_object_get(json_conf, "Logging");
+                json_object*chronokeeper_log = json_object_object_get(json_conf, "Monitoring");
                 json_object_object_foreach(chronokeeper_log, key, val)
                 {
-                    if(strcmp(key, "log") == 0)
+                    if(strcmp(key, "monitor") == 0)
                     {
                         parseLogConf(val, KEEPER_CONF.KEEPER_LOG_CONF);
                     }
@@ -913,12 +967,31 @@ private:
     }
 
     void parseGrapherConf(json_object*json_conf);
+    void parsePlayerConf(json_object*json_conf);
 
     void parseClientConf(json_object*json_conf)
     {
         json_object_object_foreach(json_conf, key, val)
         {
-            if(strcmp(key, "VisorClientPortalService") == 0)
+            if(strcmp(key, "ClientQueryService") == 0)
+            {
+                assert(json_object_is_type(val, json_type_object));
+                json_object*visor_client_portal_service_conf = json_object_object_get(json_conf
+                                                                                      , "ClientQueryService");
+                json_object_object_foreach(visor_client_portal_service_conf, key, val)
+                {
+                    if(strcmp(key, "rpc") == 0)
+                    {
+                        parseRPCProviderConf(val, CLIENT_CONF.CLIENT_QUERY_SERVICE_CONF);
+                    }
+                    else
+                    {
+                        std::cerr << "[ConfigurationManager] Unknown ClientQueryService configuration: " << key
+                                  << std::endl;
+                    }
+                }
+            }
+            else if(strcmp(key, "VisorClientPortalService") == 0)
             {
                 assert(json_object_is_type(val, json_type_object));
                 json_object*visor_client_portal_service_conf = json_object_object_get(json_conf
@@ -936,13 +1009,13 @@ private:
                     }
                 }
             }
-            else if(strcmp(key, "Logging") == 0)
+            else if(strcmp(key, "Monitoring") == 0)
             {
                 assert(json_object_is_type(val, json_type_object));
-                json_object*chronoclient_log = json_object_object_get(json_conf, "Logging");
+                json_object*chronoclient_log = json_object_object_get(json_conf, "Monitoring");
                 json_object_object_foreach(chronoclient_log, key, val)
                 {
-                    if(strcmp(key, "log") == 0)
+                    if(strcmp(key, "monitor") == 0)
                     {
                         parseLogConf(val, CLIENT_CONF.CLIENT_LOG_CONF);
                     }

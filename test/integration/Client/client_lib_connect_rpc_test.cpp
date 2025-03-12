@@ -10,7 +10,7 @@
 #include "common.h"
 #include <cassert>
 #include <cmd_arg_parse.h>
-#include "log.h"
+#include "chrono_monitor.h"
 
 #define NUM_CONNECTION (1)
 
@@ -23,13 +23,13 @@ int main(int argc, char**argv)
         std::exit(EXIT_FAILURE);
     }
     ChronoLog::ConfigurationManager confManager(conf_file_path);
-    int result = Logger::initialize(confManager.CLIENT_CONF.CLIENT_LOG_CONF.LOGTYPE
-                                    , confManager.CLIENT_CONF.CLIENT_LOG_CONF.LOGFILE
-                                    , confManager.CLIENT_CONF.CLIENT_LOG_CONF.LOGLEVEL
-                                    , confManager.CLIENT_CONF.CLIENT_LOG_CONF.LOGNAME
-                                    , confManager.CLIENT_CONF.CLIENT_LOG_CONF.LOGFILESIZE
-                                    , confManager.CLIENT_CONF.CLIENT_LOG_CONF.LOGFILENUM
-                                    , confManager.CLIENT_CONF.CLIENT_LOG_CONF.FLUSHLEVEL);
+    int result = chronolog::chrono_monitor::initialize(confManager.CLIENT_CONF.CLIENT_LOG_CONF.LOGTYPE
+                                                       , confManager.CLIENT_CONF.CLIENT_LOG_CONF.LOGFILE
+                                                       , confManager.CLIENT_CONF.CLIENT_LOG_CONF.LOGLEVEL
+                                                       , confManager.CLIENT_CONF.CLIENT_LOG_CONF.LOGNAME
+                                                       , confManager.CLIENT_CONF.CLIENT_LOG_CONF.LOGFILESIZE
+                                                       , confManager.CLIENT_CONF.CLIENT_LOG_CONF.LOGFILENUM
+                                                       , confManager.CLIENT_CONF.CLIENT_LOG_CONF.FLUSHLEVEL);
     if(result == 1)
     {
         exit(EXIT_FAILURE);
@@ -52,18 +52,8 @@ int main(int argc, char**argv)
     for(int i = 0; i < NUM_CONNECTION; i++) client_ids.emplace_back(gen_random(8));
     for(int i = 0; i < NUM_CONNECTION; i++)
     {
-        switch(confManager.CLIENT_CONF.VISOR_CLIENT_PORTAL_SERVICE_CONF.RPC_CONF.RPC_IMPLEMENTATION)
-        {
-            case CHRONOLOG_THALLIUM_SOCKETS:
-            case CHRONOLOG_THALLIUM_TCP:
-            case CHRONOLOG_THALLIUM_ROCE:
-                server_uri = confManager.CLIENT_CONF.VISOR_CLIENT_PORTAL_SERVICE_CONF.RPC_CONF.PROTO_CONF;
-                break;
-            default:
-                server_uri = "ofi+sockets";
-        }
-
-        server_uri += "://" + server_ip + ":" + std::to_string(base_port + i);
+        server_uri = confManager.CLIENT_CONF.VISOR_CLIENT_PORTAL_SERVICE_CONF.RPC_CONF.PROTO_CONF;
+         + "://" + server_ip + ":" + std::to_string(base_port + i);
         t1 = std::chrono::steady_clock::now();
         ret = client.Connect();//server_uri, client_ids[i], flags); //, offset);
         assert(ret == chronolog::CL_SUCCESS);
@@ -81,7 +71,8 @@ int main(int argc, char**argv)
     };
 
     LOG_INFO("[ClientLibConnectRPCTest] Average connection time: {} ns", duration_connect.count() / NUM_CONNECTION);
-    LOG_INFO("[ClientLibConnectRPCTest] Average disconnection time: {} ns", duration_disconnect.count() / NUM_CONNECTION);
+    LOG_INFO("[ClientLibConnectRPCTest] Average disconnection time: {} ns",
+            duration_disconnect.count() / NUM_CONNECTION);
 
     return 0;
 }
