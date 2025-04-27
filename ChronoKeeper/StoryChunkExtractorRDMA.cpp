@@ -62,36 +62,36 @@ int chronolog::StoryChunkExtractorRDMA::processStoryChunk(StoryChunk*story_chunk
         {
             LOG_INFO("[StoryChunkExtractorRDMA] Successfully drained a story chunk to Grapher, StoryID: {}, "
                      "StartTime: {}", story_chunk->getStoryId(), story_chunk->getStartTime());
-            return chronolog::to_int(chronolog::ClientErrorCode::Success);
+            return chronolog::CL_SUCCESS;
         }
         else
         {
             LOG_ERROR("[StoryChunkExtractorRDMA] Failed to drain a story chunk to Grapher, StoryID: {}, "
                       "StartTime: {}, Error Code: {}", story_chunk->getStoryId(), story_chunk->getStartTime(), result);
-            return chronolog::to_int(chronolog::ServerErrorCode::StoryChunkExtractionError);
+            return chronolog::CL_ERR_STORY_CHUNK_EXTRACTION;
         }
     }
     catch(tl::exception const &ex)
     {
         LOG_ERROR("[StoryChunkExtractorRDMA] Thallium exception encountered draining story chunk to grapher.");
         LOG_ERROR("[StoryChunkExtractorRDMA] Exception: {}", ex.what());
-        return (chronolog::to_int(chronolog::ClientErrorCode::Unknown));
+        return (chronolog::CL_ERR_UNKNOWN);
     }
     catch(cereal::Exception const &ex)
     {
         LOG_ERROR("[StoryChunkExtractorRDMA] Cereal exception encountered serializing story chunk.");
         LOG_ERROR("[StoryChunkExtractorRDMA] Exception: {}", ex.what());
-        return chronolog::to_int(chronolog::ClientErrorCode::Unknown);
+        return chronolog::CL_ERR_UNKNOWN;
     }
     catch(std::exception const &ex)
     {
         LOG_ERROR("[StoryChunkExtractorRDMA] Standard exception encountered serializing story chunk.");
         LOG_ERROR("[StoryChunkExtractorRDMA] Exception: {}", ex.what());
-        return chronolog::to_int(chronolog::ClientErrorCode::Unknown);
+        return chronolog::CL_ERR_UNKNOWN;
     }
     catch(...)
     {
         LOG_ERROR("[StoryChunkExtractorRDMA] Unknown exception encountered draining story chunk to grapher.");
-        return chronolog::to_int(chronolog::ClientErrorCode::Unknown);
+        return chronolog::CL_ERR_UNKNOWN;
     }
 }
