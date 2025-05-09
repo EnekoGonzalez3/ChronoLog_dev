@@ -6,3 +6,9 @@ cmake-build-*/
 
 # qt creator
 CMakeLists.txt.user
+
+.spack-env
+
+spack.lock
+
+*.patch
