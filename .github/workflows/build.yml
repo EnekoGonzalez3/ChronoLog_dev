@@ -27,5 +27,6 @@ jobs:
 
       - name: Build ChronoLog
         run: |
+          source ~/spack/share/spack/setup-env.sh
           cd deploy
           ./local_single_user_deploy.sh -b -t Debug
