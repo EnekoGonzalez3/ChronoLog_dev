@@ -1,0 +1,32 @@
+name: ChronoLog Code Style Check
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  style-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install -y clang-format
+
+      - name: Generate style patch (if any)
+        run: |
+          find . \( -name '*.cpp' -o -name '*.h' -o -name '*.cc' -o -name '*.hpp' \) \
+            -not -path "./build/*" -not -path "./spack/*" \
+            -exec clang-format -style=file:{} -i {} \;
+          git diff > style-fix.patch
+        continue-on-error: true
+
+      - name: Upload patch
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: style-fix
+          path: style-fix.patch
