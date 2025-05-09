@@ -1,0 +1,31 @@
+name: ChronoLog Build Check
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git g++ python3 curl build-essential \
+            unzip tar libtool autoconf automake pkg-config
+
+      - name: Clone Spack
+        run: |
+          git clone --branch v0.21.2 https://github.com/spack/spack.git ~/spack
+          echo "source ~/spack/share/spack/setup-env.sh" >> ~/.bashrc
+          source ~/spack/share/spack/setup-env.sh
+
+      - name: Build ChronoLog
+        run: |
+          cd deploy
+          ./local_single_user_deploy.sh -b -t Debug
