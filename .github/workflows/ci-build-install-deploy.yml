@@ -30,7 +30,7 @@ jobs:
         run: |
           source ~/spack/share/spack/setup-env.sh
           cd deploy
-          ./local_single_user_deploy.sh --build --build-type Debug --install-dir /tmp/chronolog-install
+          ./local_single_user_deploy.sh --build --build-type Debug --install-dir /tmp/chronolog-install 2>&1 | tee build.log
 
       - name: Install ChronoLog
         run: |
