@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          path: .
 
       - name: Install prerequisites
         run: |
@@ -34,10 +36,12 @@ jobs:
 
       - name: Install ChronoLog
         run: |
+          cd deploy
           ./local_single_user_deploy.sh --install --work-dir /tmp/chronolog-install/Debug
 
       - name: Deploy ChronoLog
         run: |
+          cd deploy
           ./local_single_user_deploy.sh --start --work-dir /tmp/chronolog-install/Debug
 
       - name: Check ChronoLog Processes
