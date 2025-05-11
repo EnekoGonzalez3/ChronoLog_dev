@@ -37,7 +37,7 @@ jobs:
       - name: Build chronolog
         run: |
           mkdir build && cd build
-          cmake -DCMAKE_BUILD_TYPE=Debug -DINSTALL_DIR=/tmp/chronolog-install ..
+          cmake -DCMAKE_BUILD_TYPE=Debug -DINSTALL_DIR=~/chronolog-install ..
           cd ..
 
       - name: Check build dir
