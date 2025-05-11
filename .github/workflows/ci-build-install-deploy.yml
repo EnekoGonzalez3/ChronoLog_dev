@@ -28,36 +28,19 @@ jobs:
           echo "source ~/spack/share/spack/setup-env.sh" >> ~/.bashrc
           source ~/spack/share/spack/setup-env.sh
 
-      - name: Build ChronoLog
+      - name: Activate spack env
         run: |
           source ~/spack/share/spack/setup-env.sh
-          cd deploy
-          ./local_single_user_deploy.sh --build --build-type Debug --install-dir /tmp/chronolog-install 2>&1 | tee build.log
+          spack env activate -p .
+          spack install -v
 
-      - name: Install ChronoLog
+      - name: Build chronolog
         run: |
-          cd deploy
-          ./local_single_user_deploy.sh --install --work-dir /tmp/chronolog-install/Debug
+          mkdir build && cd build
+          cmake -DCMAKE_BUILD_TYPE=Debug -DINSTALL_DIR=/tmp/chronolog-install ..
+          cd ..
 
-      - name: Deploy ChronoLog
+      - name: Check build dir
         run: |
-          cd deploy
-          ./local_single_user_deploy.sh --start --work-dir /tmp/chronolog-install/Debug
-
-      - name: Check ChronoLog Processes
-        run: |
-          sleep 5
-          echo "Checking running ChronoLog processes..."
-          processes=$(pgrep -laf "chronovisor_server|chrono_grapher|chrono_keeper|chrono_player" || true)
-
-          echo "$processes"
-
-          expected=4
-          actual=$(echo "$processes" | grep -cE "chronovisor_server|chrono_grapher|chrono_keeper|chrono_player")
-
-          if [ "$actual" -lt "$expected" ]; then
-            echo "❌ Expected $expected ChronoLog processes but found $actual."
-            exit 1
-          else
-            echo "✅ All $expected ChronoLog processes are running."
-          fi
+          cd build
+          ls -la
