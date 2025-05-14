@@ -23,11 +23,41 @@ jobs:
             -w /workspace \
             chronolog-ci \
             bash -c "
-              source /opt/spack/share/spack/setup-env.sh &&
-              spack env activate -p . &&
-              spack install &&
-              mkdir -p build &&
-              cd build &&
-              cmake -DCMAKE_BUILD_TYPE=Debug -DINSTALL_DIR=~/chronolog-install .. &&
+              set -e
+
+              ##################################
+              # Step 1: Spack Environment
+              ##################################
+              echo '[1/4] Setting up Spack...'
+              source /opt/spack/share/spack/setup-env.sh
+              spack env activate -p .
+              spack install
+
+              ##################################
+              # Step 2: Build ChronoLog
+              ##################################
+              echo '[2/4] Building ChronoLog...'
+              mkdir -p build
+              cd build
+              cmake -DCMAKE_BUILD_TYPE=Debug -DINSTALL_DIR=\$HOME/chronolog-install ..
               make -j\$(nproc)
+
+              ##################################
+              # Step 3: Install ChronoLog
+              ##################################
+              echo '[3/4] Installing ChronoLog...'
+              make install
+              ls -l \$HOME/chronolog-install
+
+              ##################################
+              # Step 4: Post-Install Verification
+              ##################################
+              echo '[4/4] Verifying install...'
+              if [ -d \"\$HOME/chronolog-install/bin\" ]; then
+                echo '✅ Install successful!'
+                ls -l \$HOME/chronolog-install/bin
+              else
+                echo '❌ Install failed — bin directory not found'
+                exit 1
+              fi
             "
