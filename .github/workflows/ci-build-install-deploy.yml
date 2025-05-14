@@ -78,18 +78,19 @@ jobs:
               pgrep -la chrono > /tmp/chrono_processes.txt
               cat /tmp/chrono_processes.txt
 
-              required=("chronovisor_server" "chrono_grapher" "chrono_player" "chrono_keeper")
+              # Initialize status
               missing=0
-              for proc in "${required[@]}"; do
-                if ! grep -q "$proc" /tmp/chrono_processes.txt; then
-                  echo "❌ Missing process: $proc"
-                  missing=1
-                else
+
+              for proc in chronovisor_server chrono_grapher chrono_player chrono_keeper; do
+                if grep -q "$proc" /tmp/chrono_processes.txt; then
                   echo "✅ Found: $proc"
+                else
+                  echo "❌ Missing: $proc"
+                  missing=1
                 fi
               done
 
-              if [ $missing -eq 0 ]; then
+              if [ "$missing" -eq 0 ]; then
                 echo '✅ All required ChronoLog components are running.'
               else
                 echo '❌ One or more ChronoLog components are missing.'
