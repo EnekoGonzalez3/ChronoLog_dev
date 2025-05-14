@@ -28,7 +28,7 @@ jobs:
               ##################################
               # Step 1: Spack Environment
               ##################################
-              echo '[1/4] Setting up Spack...'
+              echo '[1/6] Setting up Spack...'
               source /opt/spack/share/spack/setup-env.sh
               spack env activate -p .
               spack install
@@ -36,7 +36,7 @@ jobs:
               ##################################
               # Step 2: Build ChronoLog
               ##################################
-              echo '[2/4] Building ChronoLog...'
+              echo '[2/6] Building ChronoLog...'
               mkdir -p build
               cd build
               cmake -DCMAKE_BUILD_TYPE=Debug -DINSTALL_DIR=\$HOME/chronolog-install ..
@@ -45,19 +45,54 @@ jobs:
               ##################################
               # Step 3: Install ChronoLog
               ##################################
-              echo '[3/4] Installing ChronoLog...'
+              echo '[3/6] Installing ChronoLog...'
               make install
               ls -l \$HOME/chronolog-install
 
               ##################################
               # Step 4: Post-Install Verification
               ##################################
-              echo '[4/4] Verifying install...'
+              echo '[4/6] Verifying install...'
               if [ -d \"\$HOME/chronolog-install/Debug/bin\" ]; then
                 echo '✅ Install successful!'
                 ls -l \$HOME/chronolog-install/Debug/bin
               else
                 echo '❌ Install failed — bin directory not found'
+                exit 1
+              fi
+
+              ##################################
+              # Step 5: Deploy ChronoLog
+              ##################################
+              echo '[5/6] Deploying ChronoLog...'
+              cd /workspace/deploy
+              ./local_single_user_deploy.sh -d -w \$HOME/chronolog-install/Debug/
+              cd ../..
+
+              ##################################
+              # Step 6: Check Deployment
+              ##################################
+              echo '[6/6] Verifying Deployment...'
+              sleep 5  # allow time for processes to start
+
+              pgrep -la chrono > /tmp/chrono_processes.txt
+              cat /tmp/chrono_processes.txt
+
+              required=("chronovisor_server" "chrono_grapher" "chrono_player" "chrono_keeper")
+              missing=0
+              for proc in "${required[@]}"; do
+                if ! grep -q "$proc" /tmp/chrono_processes.txt; then
+                  echo "❌ Missing process: $proc"
+                  missing=1
+                else
+                  echo "✅ Found: $proc"
+                fi
+              done
+
+              if [ $missing -eq 0 ]; then
+                echo '✅ All required ChronoLog components are running.'
+              else
+                echo '❌ One or more ChronoLog components are missing.'
                 exit 1
               fi
             "
