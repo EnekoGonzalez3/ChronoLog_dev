@@ -1,3 +1,21 @@
+name: ChronoLog CI Build, Install, and Deploy
+
+on:
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  ci-check:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -t chronolog-ci .github/docker
+
       - name: Run CI inside Docker container
         run: |
           docker run --rm \
