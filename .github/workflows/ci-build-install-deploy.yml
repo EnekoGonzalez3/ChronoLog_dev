@@ -2,8 +2,7 @@ name: ChronoLog CI Build, Install, and Deploy
 
 on:
   pull_request:
-    branches:
-      - develop
+    branches: [ develop ]
 
 jobs:
   ci-check:
@@ -13,34 +12,22 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          path: .
 
-      - name: Install prerequisites
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git g++ python3 curl build-essential \
-            unzip tar libtool autoconf automake pkg-config jq lsof
+      - name: Build Docker image
+        run: docker build -t chronolog-ci .github/docker
 
-      - name: Clone Spack
+      - name: Run CI inside Docker container
         run: |
-          git clone --branch v0.21.2 https://github.com/spack/spack.git ~/spack
-          echo "source ~/spack/share/spack/setup-env.sh" >> ~/.bashrc
-          source ~/spack/share/spack/setup-env.sh
-
-      - name: Activate spack env
-        run: |
-          source ~/spack/share/spack/setup-env.sh
-          spack env activate -p .
-          spack install
-
-      - name: Build chronolog
-        run: |
-          mkdir build && cd build
-          cmake -DCMAKE_BUILD_TYPE=Debug -DINSTALL_DIR=~/chronolog-install ..
-          cd ..
-
-      - name: Check build dir
-        run: |
-          cd build
-          ls -la
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            chronolog-ci \
+            bash -c "
+              source /opt/spack/share/spack/setup-env.sh &&
+              spack env activate -p . &&
+              spack install &&
+              mkdir -p build &&
+              cd build &&
+              cmake -DCMAKE_BUILD_TYPE=Debug -DINSTALL_DIR=~/chronolog-install .. &&
+              make -j\$(nproc)
+            "
