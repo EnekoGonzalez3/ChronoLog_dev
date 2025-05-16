@@ -65,6 +65,7 @@ jobs:
               ##################################
               echo '[5/6] Deploying ChronoLog...'
               if [ -x /workspace/deploy/local_single_user_deploy.sh ]; then
+                export LD_LIBRARY_PATH=\$HOME/chronolog-install/Debug/lib:\$LD_LIBRARY_PATH
                 cd /workspace/deploy
                 ./local_single_user_deploy.sh -d -w \$HOME/chronolog-install/Debug/
                 cd /workspace
