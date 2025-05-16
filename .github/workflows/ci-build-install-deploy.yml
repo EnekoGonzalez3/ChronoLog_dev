@@ -97,14 +97,14 @@ jobs:
                 echo '✅ All ChronoLog components are running.'
               else
                 echo '❌ Deployment incomplete — some components are not running.'
-                echo "==== Dumping monitor logs ===="
-                if [ -d "$HOME/chronolog-install/Debug/monitor" ]; then
-                  for log in $HOME/chronolog-install/Debug/monitor/*; do
-                    echo "==== $log ===="
-                    cat "$log"
+                echo \"==== Dumping monitor logs ====\"
+                if [ -d \"\$HOME/chronolog-install/Debug/monitor\" ]; then
+                  for log in \$HOME/chronolog-install/Debug/monitor/*; do
+                    echo \"==== \$log ====\"
+                    cat \"\$log\"
                   done
                 else
-                  echo "No monitor logs found!"
+                  echo \"No monitor logs found!\"
                 fi
                 exit 1
               fi              
