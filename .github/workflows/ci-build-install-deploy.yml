@@ -36,16 +36,27 @@ jobs:
               # Step 2: Build ChronoLog
               ##################################
               echo '[2/6] Building ChronoLog...'
-              mkdir -p build
-              cd build
-              cmake -DCMAKE_BUILD_TYPE=Debug -DINSTALL_DIR=\$HOME/chronolog-install ..
-              make -j\$(nproc)
+              if [ -x /workspace/deploy/local_single_user_deploy.sh ]; then
+                cd /workspace/deploy
+                ./local_single_user_deploy.sh --build --build-type Debug --install-dir \$HOME/chronolog-install/
+                cd /workspace
+              else
+                echo '❌ Deploy script not found or not executable'
+                exit 1
+              fi
 
               ##################################
               # Step 3: Install ChronoLog
               ##################################
               echo '[3/6] Installing ChronoLog...'
-              make install
+              if [ -x /workspace/deploy/local_single_user_deploy.sh ]; then
+                cd /workspace/deploy
+                ./local_single_user_deploy.sh -i -w \$HOME/chronolog-install/Debug/
+                cd /workspace
+              else
+                echo '❌ Deploy script not found or not executable'
+                exit 1
+              fi
               ls -l \$HOME/chronolog-install
 
               ##################################
@@ -65,7 +76,6 @@ jobs:
               ##################################
               echo '[5/6] Deploying ChronoLog...'
               if [ -x /workspace/deploy/local_single_user_deploy.sh ]; then
-                export LD_LIBRARY_PATH=\$HOME/chronolog-install/Debug/lib:\$LD_LIBRARY_PATH
                 cd /workspace/deploy
                 ./local_single_user_deploy.sh -d -w \$HOME/chronolog-install/Debug/
                 cd /workspace
