@@ -47,9 +47,5 @@ int main() {
     // Disconnect from ChronoVisor
     ret = client.Disconnect();
     assert(ret == chronolog::CL_SUCCESS);
-
-    // Clean up
-    // delete client;
-
     return 0;
 }
