@@ -7,21 +7,18 @@ on:
 jobs:
   ci-check:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 90
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Build Docker image
-        run: |
-          docker build -t chronolog-ci .github/docker
+        run: docker build -t chronolog-ci .github/docker
 
       - name: Run CI inside Docker container
         run: |
           docker run --rm \
-            -u grc-iit \
-            -e HOME=/home/grc-iit \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
             chronolog-ci \
@@ -31,7 +28,7 @@ jobs:
               # Step 1: Spack Environment
               ##################################
               echo '[1/6] Setting up Spack...'
-              source /home/grc-iit/Spack/spack/share/spack/setup-env.sh
+              source /opt/spack/share/spack/setup-env.sh
               spack env activate -p .
               spack install
 

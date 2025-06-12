@@ -1,32 +1,18 @@
-FROM ubuntu:24.04
+FROM ubuntu:22.04
 
-# Create user and set home
-RUN useradd -ms /bin/bash grc-iit
-
-# Install all required packages
+# Install dependencies
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
-      git g++ python3 curl build-essential unzip tar \
-      libtool pkg-config jq lsof cmake locales
+    git g++ python3 curl build-essential unzip tar \
+    libtool autoconf automake pkg-config jq lsof cmake
 
-# Set up locale (enable UTF-8)
-RUN locale-gen en_US.UTF-8
-ENV LANG=en_US.UTF-8
-ENV LANGUAGE=en_US:en
-ENV LC_ALL=en_US.UTF-8
+# Clone Spack
+RUN git clone --branch v0.21.2 https://github.com/spack/spack.git /opt/spack && \
+    echo "source /opt/spack/share/spack/setup-env.sh" >> /etc/bash.bashrc
 
-# Install Spack (as grc-iit, into /home/grc-iit/Spack)
-USER grc-iit
-WORKDIR /home/grc-iit
-
-RUN git clone --branch v0.21.2 https://github.com/spack/spack.git /home/grc-iit/Spack && \
-    echo 'source /home/grc-iit/Spack/spack/share/spack/setup-env.sh' >> /home/grc-iit/.bashrc && \
-    ls -l /home/grc-iit/Spack/spack/share/spack/setup-env.sh
-
-ENV SPACK_ROOT=/home/grc-iit/Spack/spack
+# Setup Spack in PATH
+ENV SPACK_ROOT=/opt/spack
 ENV PATH=$SPACK_ROOT/bin:$PATH
-
-# Final workdir for build mounts
-WORKDIR /workspace
-
 SHELL ["/bin/bash", "-c"]
+
+WORKDIR /workspace
