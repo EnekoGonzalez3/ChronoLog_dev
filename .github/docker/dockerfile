@@ -1,18 +1,36 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
-# Install dependencies
+# Create user and set home
+RUN useradd -ms /bin/bash grc-iit
+
+# Install all required packages
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    git g++ python3 curl build-essential unzip tar \
-    libtool autoconf automake pkg-config jq lsof cmake
+      git g++ python3 curl build-essential unzip tar \
+      libtool pkg-config jq lsof cmake \
+      locales
 
-# Clone Spack
-RUN git clone --branch v0.21.2 https://github.com/spack/spack.git /opt/spack && \
-    echo "source /opt/spack/share/spack/setup-env.sh" >> /etc/bash.bashrc
+# Set up locale (your env was mostly POSIX, but enable UTF-8 to avoid issues)
+RUN locale-gen en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
 
-# Setup Spack in PATH
-ENV SPACK_ROOT=/opt/spack
+# Set user and working directory
+USER grc-iit
+WORKDIR /home/grc-iit
+
+# Install Spack in user home (as in your env, but you can adjust if you want to keep it at /opt/spack)
+RUN git clone --branch v0.21.2 https://github.com/spack/spack.git /home/grc-iit/Spack && \
+    echo "source /home/grc-iit/Spack/spack/share/spack/setup-env.sh" >> ~/.bashrc
+
+ENV SPACK_ROOT=/home/grc-iit/Spack/spack
 ENV PATH=$SPACK_ROOT/bin:$PATH
+
+# Set shell
 SHELL ["/bin/bash", "-c"]
 
+# Default workdir for mounting project (override in your GitHub action with -v)
 WORKDIR /workspace
+
+# End of Dockerfile
