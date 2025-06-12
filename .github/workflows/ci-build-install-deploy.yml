@@ -7,7 +7,7 @@ on:
 jobs:
   ci-check:
     runs-on: ubuntu-22.04
-    timeout-minutes: 90
+    timeout-minutes: 120
 
     steps:
       - name: Checkout code
@@ -21,9 +21,9 @@ jobs:
         run: |
           docker run --rm \
             -u grc-iit \
+            -e HOME=/home/grc-iit \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
-            -e HOME=/home/grc-iit \
             chronolog-ci \
             bash -c "
               set -e
