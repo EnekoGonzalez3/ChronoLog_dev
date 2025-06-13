@@ -75,10 +75,10 @@ jobs:
               
               # 2. Main Binaries check
               for exe in chronovisor_server chrono_keeper chrono_grapher chrono_player; do
-                BIN_PATH="\$HOME/chronolog-install/Debug/bin/$exe"
+                BIN_PATH=\"\$HOME/chronolog-install/Debug/bin/$exe\"
                 
                 # Existence and executable check
-                if [ ! -x "$BIN_PATH" ]; then
+                if [ ! -x \"$BIN_PATH\" ]; then
                   echo "❌ $exe is missing or not executable in bin folder!"
                   missing=1
                   continue
@@ -87,7 +87,7 @@ jobs:
                 fi
 
                 # Dependency check
-                if ldd "$BIN_PATH" | grep 'not found'; then
+                if ldd \"$BIN_PATH\" | grep 'not found'; then
                   echo "❌ $exe is missing one or more shared libraries!"
                   missing=1
                 else
