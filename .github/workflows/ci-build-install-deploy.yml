@@ -65,7 +65,7 @@ jobs:
               echo '[4/6] Verifying install...'
 
               BIN_DIR="$HOME/chronolog-install/Debug/bin"
-              REQUIRED_BINS=("chronovisor_server" "chrono_keeper" "chrono_grapher" "chrono_player")
+              REQUIRED_BINS="chronovisor_server chrono_keeper chrono_grapher chrono_player"
               missing=0
 
               # 1. Folder check
@@ -78,7 +78,7 @@ jobs:
               fi
 
               # 2. Main Binaries check
-              for exe in "${REQUIRED_BINS[@]}"; do
+              for exe in $REQUIRED_BINS; do
                 BIN_PATH="$BIN_DIR/$exe"
                 # Existence and executable check
                 if [ ! -x "$BIN_PATH" ]; then
