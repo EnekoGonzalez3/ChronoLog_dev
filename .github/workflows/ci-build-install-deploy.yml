@@ -63,8 +63,6 @@ jobs:
               # Step 4: Post-Install Verification
               ##################################
               echo '[4/6] Verifying install...'
-
-              # Check bin/ folder
               if [ -d \"\$HOME/chronolog-install/Debug/bin\" ]; then
                 echo '✅ Install successful!'
                 ls -l \$HOME/chronolog-install/Debug/bin
@@ -72,18 +70,6 @@ jobs:
                 echo '❌ Install failed — bin directory not found'
                 exit 1
               fi
-              
-              # 2. Main Binaries check
-              for exe in chronovisor_server chrono_keeper chrono_grapher chrono_player; do
-                BIN_PATH="\$HOME/chronolog-install/Debug/bin/$exe"
-                # Existence and executable check
-                if [ ! -x "$BIN_PATH" ]; then
-                  echo "❌ $exe is missing or not executable in bin folder!"
-                  missing=1
-                  continue
-                else
-                  echo "✅ $exe is present and executable."
-                fi
 
               ##################################
               # Step 5: Deploy ChronoLog
