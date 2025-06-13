@@ -62,18 +62,6 @@ jobs:
               ##################################
               # Step 4: Post-Install Verification
               ##################################
-              #echo '[4/6] Verifying install...'
-              #if [ -d \"\$HOME/chronolog-install/Debug/bin\" ]; then
-              #  echo '✅ Install successful!'
-              #  ls -l \$HOME/chronolog-install/Debug/bin
-              #else
-              #  echo '❌ Install failed — bin directory not found'
-              # exit 1
-              #fi
-
-              ##################################
-              # Step 4: Post-Install Verification
-              ##################################
               echo '[4/6] Verifying install...'
 
               BIN_DIR="$HOME/chronolog-install/Debug/bin"
