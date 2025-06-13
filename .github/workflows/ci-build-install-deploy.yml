@@ -65,9 +65,9 @@ jobs:
               echo '[4/6] Verifying install...'
 
               # Check bin/ folder
-              if [ -d \"\$HOME/chronolog-install/Debug/bin\" ]; then
+              if [ -d $HOME/chronolog-install/Debug/bin ]; then
                 echo '✅ Install successful!'
-                ls -l \$HOME/chronolog-install/Debug/bin
+                ls -l $HOME/chronolog-install/Debug/bin
               else
                 echo '❌ Install failed — bin directory not found'
                 exit 1
@@ -75,10 +75,10 @@ jobs:
               
               # 2. Main Binaries check
               for exe in chronovisor_server chrono_keeper chrono_grapher chrono_player; do
-                BIN_PATH=\"\$HOME/chronolog-install/Debug/bin/$exe\"
+                BIN_PATH="$HOME/chronolog-install/Debug/bin/$exe"
                 
                 # Existence and executable check
-                if [ ! -x \"$BIN_PATH\" ]; then
+                if [ ! -x $BIN_PATH ]; then
                   echo "❌ $exe is missing or not executable in bin folder!"
                   missing=1
                   continue
@@ -87,7 +87,7 @@ jobs:
                 fi
 
                 # Dependency check
-                if ldd \"$BIN_PATH\" | grep 'not found'; then
+                if ldd $BIN_PATH | grep 'not found'; then
                   echo "❌ $exe is missing one or more shared libraries!"
                   missing=1
                 else
@@ -95,11 +95,11 @@ jobs:
                 fi
               done
 
-              if [ "$missing" = 1 ]; then
-                echo "❌ One or more required binaries failed verification."
+              if [ $missing = 1 ]; then
+                echo '❌ One or more required binaries failed verification.'
                 exit 1
               else
-                echo "✅ All required binaries present, executable, and dependencies resolved."
+                echo '✅ All required binaries present, executable, and dependencies resolved.'
               fi
 
               ##################################
