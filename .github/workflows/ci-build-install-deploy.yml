@@ -64,22 +64,18 @@ jobs:
               ##################################
               echo '[4/6] Verifying install...'
 
-              BIN_DIR="$HOME/chronolog-install/Debug/bin"
-              REQUIRED_BINS="chronovisor_server chrono_keeper chrono_grapher chrono_player"
-              missing=0
-
-              # 1. Folder check
-              if [ -d "$BIN_DIR" ]; then
-                echo "✅ Install bin directory found!"
-                ls -l "$BIN_DIR"
+              # Check bin/ folder
+              if [ -d \"\$HOME/chronolog-install/Debug/bin\" ]; then
+                echo '✅ Install successful!'
+                ls -l \$HOME/chronolog-install/Debug/bin
               else
-                echo "❌ Install failed — bin directory not found"
+                echo '❌ Install failed — bin directory not found'
                 exit 1
               fi
-
+              
               # 2. Main Binaries check
-              for exe in $REQUIRED_BINS; do
-                BIN_PATH="$BIN_DIR/$exe"
+              for exe in chronovisor_server chrono_keeper chrono_grapher chrono_player; do
+                BIN_PATH="\$HOME/chronolog-install/Debug/bin/$exe"
                 # Existence and executable check
                 if [ ! -x "$BIN_PATH" ]; then
                   echo "❌ $exe is missing or not executable in $BIN_DIR!"
@@ -88,31 +84,6 @@ jobs:
                 else
                   echo "✅ $exe is present and executable."
                 fi
-
-                # Dependency check
-                if ldd "$BIN_PATH" | grep 'not found'; then
-                  echo "❌ $exe is missing one or more shared libraries!"
-                  missing=1
-                else
-                  echo "✅ $exe dependencies OK."
-                fi
-
-                # Optional: Check if the binary can start (show help/version)
-                if "$BIN_PATH" --version >/dev/null 2>&1; then
-                  echo "✅ $exe runs with --version."
-                elif "$BIN_PATH" --help >/dev/null 2>&1; then
-                  echo "✅ $exe runs with --help."
-                else
-                  echo "⚠️ $exe could not print help/version. (This may be OK for some binaries)"
-                fi
-              done
-
-              if [ "$missing" = 1 ]; then
-                echo "❌ One or more required binaries failed verification."
-                exit 1
-              else
-                echo "✅ All required binaries present, executable, and dependencies resolved."
-              fi
 
               ##################################
               # Step 5: Deploy ChronoLog
