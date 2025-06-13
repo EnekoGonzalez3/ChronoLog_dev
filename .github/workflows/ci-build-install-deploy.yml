@@ -84,6 +84,13 @@ jobs:
                 else
                   echo "✅ $exe is present and executable."
                 fi
+                # Dependency check
+                if ldd "$BIN_PATH" | grep 'not found'; then
+                  echo "❌ $exe is missing one or more shared libraries!"
+                  missing=1
+                else
+                  echo "✅ $exe dependencies OK."
+                fi
 
               ##################################
               # Step 5: Deploy ChronoLog
