@@ -126,7 +126,7 @@ jobs:
 
               echo '🔍 Checking required components...'
               for proc in chronovisor_server chrono_grapher chrono_player chrono_keeper; do
-                count=$(grep -c "$proc" /tmp/chrono_processes.txt || true)
+                count=$(grep -c $proc /tmp/chrono_processes.txt || true)
                 case $proc in
                   chronovisor_server)
                     expected=1
@@ -138,7 +138,7 @@ jobs:
                     expected=5
                     ;;
                 esac
-                if [ "$count" -eq "$expected" ]; then
+                if [ $count -eq $expected ]; then
                   echo "✅ Found $count $proc (expected $expected)"
                 else
                   echo "❌ Missing or wrong count: $proc (found $count, expected $expected)"
@@ -146,18 +146,18 @@ jobs:
                 fi
               done
 
-              if [ "$missing" != "1" ]; then
+              if [ $missing != '1' ]; then
                 echo '✅ All ChronoLog components are running.'
               else
                 echo '❌ Deployment incomplete — some components are not running or wrong count.'
-                echo "==== Dumping monitor logs ===="
-                if [ -d "$HOME/chronolog-install/Debug/monitor" ]; then
-                  for log in "$HOME"/chronolog-install/Debug/monitor/*; do
-                    echo "==== $log ===="
-                    cat "$log"
+                echo '==== Dumping monitor logs ===='
+                if [ -d $HOME/chronolog-install/Debug/monitor ]; then
+                  for log in $HOME/chronolog-install/Debug/monitor/*; do
+                    echo '==== $log ===='
+                    cat $log
                   done
                 else
-                  echo "No monitor logs found!"
+                  echo 'No monitor logs found!'
                 fi
                 exit 1
               fi
