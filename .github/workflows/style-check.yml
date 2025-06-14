@@ -3,7 +3,7 @@ name: ChronoLog Code Style Check
 on:
   pull_request:
     branches:
-      - develop
+      - develo2p
 
 jobs:
   style-check:

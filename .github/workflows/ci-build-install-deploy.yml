@@ -2,7 +2,7 @@ name: ChronoLog CI Build, Install, Deploy
 
 on:
   pull_request:
-    branches: [ develop ]
+    branches: [ develo2p ]
 
 jobs:
   ci-check:

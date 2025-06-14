@@ -23,7 +23,7 @@ jobs:
             -w /workspace \
             --user grc-iit \
             enekoiit/chronolog:2.1.0-amd64 \
-            bash -c "
+            bash -c '
               set -e
 
               # Set HOME for this shell (sometimes needed when using --user)
@@ -32,97 +32,97 @@ jobs:
               ##################################
               # Step 1: Spack Environment
               ##################################
-              echo '[1/6] Sourcing Spack environment'
-              source \$HOME/spack/share/spack/setup-env.sh
+              echo "[1/6] Sourcing Spack environment"
+              source $HOME/spack/share/spack/setup-env.sh
 
               ##################################
               # Step 2: Build ChronoLog
               ##################################
-              echo '[2/6] Building ChronoLog from PR code...'
+              echo "[2/6] Building ChronoLog from PR code..."
               if [ -x /workspace/deploy/local_single_user_deploy.sh ]; then
                 cd /workspace/deploy
-                ./local_single_user_deploy.sh --build --build-type Debug --install-dir \$HOME/chronolog-install/
+                ./local_single_user_deploy.sh --build --build-type Release --install-dir $HOME/chronolog-install/
                 cd /workspace
               else
-                echo '❌ Deploy script not found or not executable'
+                echo "❌ Deploy script not found or not executable"
                 exit 1
               fi
 
               ##################################
               # Step 3: Install ChronoLog
               ##################################
-              echo '[3/6] Installing ChronoLog...'
+              echo "[3/6] Installing ChronoLog..."
               if [ -x /workspace/deploy/local_single_user_deploy.sh ]; then
                 cd /workspace/deploy
-                ./local_single_user_deploy.sh -i -w \$HOME/chronolog-install/Debug/
+                ./local_single_user_deploy.sh -i -w $HOME/chronolog-install/Release/
                 cd /workspace
               else
-                echo '❌ Deploy script not found or not executable'
+                echo "❌ Deploy script not found or not executable"
                 exit 1
               fi
 
               ##################################
               # Step 4: Post-Install Verification
               ##################################
-              echo '[4/6] Verifying install...'
-              if [ -d \$HOME/chronolog-install/Debug/bin ]; then
-                echo '✅ bin directory found!'
-                ls -l \$HOME/chronolog-install/Debug/bin
+              echo "[4/6] Verifying install..."
+              if [ -d $HOME/chronolog-install/Release/bin ]; then
+                echo "✅ bin directory found!"
+                ls -l $HOME/chronolog-install/Release/bin
               else
-                echo '❌ Install failed — bin directory not found'
+                echo "❌ Install failed — bin directory not found"
                 exit 1
               fi
 
               missing=0
               for exe in chronovisor_server chrono_keeper chrono_grapher chrono_player; do
-                if [ ! -x \$HOME/chronolog-install/Debug/bin/\$exe ]; then
-                  echo \"❌ \$exe is missing or not executable in bin folder!\"
+                if [ ! -x $HOME/chronolog-install/Release/bin/$exe ]; then
+                  echo "❌ $exe is missing or not executable in bin folder!"
                   missing=1
                   continue
                 else
-                  echo \"✅ \$exe is present and executable.\"
+                  echo "✅ $exe is present and executable."
                 fi
-                if ldd \$HOME/chronolog-install/Debug/bin/\$exe | grep 'not found'; then
-                  echo \"❌ \$exe is missing one or more shared libraries!\"
+                if ldd $HOME/chronolog-install/Release/bin/$exe | grep "not found"; then
+                  echo "❌ $exe is missing one or more shared libraries!"
                   missing=1
                 else
-                  echo \"✅ \$exe dependencies OK.\"
+                  echo "✅ $exe dependencies OK."
                 fi
               done
 
-              if [ \$missing = 1 ]; then
-                echo '❌ One or more required binaries failed verification.'
+              if [ $missing = 1 ]; then
+                echo "❌ One or more required binaries failed verification."
                 exit 1
               else
-                echo '✅ Install successful! All required binaries present, executable, and dependencies resolved.'
+                echo "✅ Install successful! All required binaries present, executable, and dependencies resolved."
               fi
 
               ##################################
               # Step 5: Deploy ChronoLog
               ##################################
-              echo '[5/6] Deploying ChronoLog...'
+              echo "[5/6] Deploying ChronoLog..."
               if [ -x /workspace/deploy/local_single_user_deploy.sh ]; then
                 cd /workspace/deploy
-                ./local_single_user_deploy.sh -d -k 5 -r 3 -w \$HOME/chronolog-install/Debug/
+                ./local_single_user_deploy.sh -d -k 5 -r 3 -w $HOME/chronolog-install/Release/
                 cd /workspace
               else
-                echo '❌ Deploy script not found or not executable'
+                echo "❌ Deploy script not found or not executable"
                 exit 1
               fi
 
               ##################################
               # Step 6: Check Deployment
               ##################################
-              echo '[6/6] Checking deployment...'
+              echo "[6/6] Checking deployment..."
               sleep 5
-              echo '📦 Listing ChronoLog processes...'
+              echo "📦 Listing ChronoLog processes..."
               pgrep -la chrono > /tmp/chrono_processes.txt || true
               cat /tmp/chrono_processes.txt
 
-              echo '🔍 Checking required components...'
+              echo "🔍 Checking required components..."
               for proc in chronovisor_server chrono_grapher chrono_player chrono_keeper; do
-                count=\$(grep -c \"\$proc\" /tmp/chrono_processes.txt || true)
-                case \$proc in
+                count=$(grep -c "$proc" /tmp/chrono_processes.txt || true)
+                case $proc in
                   chronovisor_server)
                     expected=1
                     ;;
@@ -133,27 +133,27 @@ jobs:
                     expected=5
                     ;;
                 esac
-                if [ \"\$count\" -eq \"\$expected\" ]; then
-                  echo \"✅ Found \$count \$proc (expected \$expected)\"
+                if [ "$count" -eq "$expected" ]; then
+                  echo "✅ Found $count $proc (expected $expected)"
                 else
-                  echo \"❌ Missing or wrong count: \$proc (found \$count, expected \$expected)\"
+                  echo "❌ Missing or wrong count: $proc (found $count, expected $expected)"
                   missing=1
                 fi
               done
 
-              if [ \"\$missing\" != \"1\" ]; then
-                echo '✅ All ChronoLog components are running.'
+              if [ "$missing" != "1" ]; then
+                echo "✅ All ChronoLog components are running."
               else
-                echo '❌ Deployment incomplete — some components are not running or wrong count.'
-                echo \"==== Dumping monitor logs ====\"
-                if [ -d \$HOME/chronolog-install/Debug/monitor ]; then
-                  for log in \$HOME/chronolog-install/Debug/monitor/*; do
-                    echo \"==== \$log ====\"
-                    cat \"\$log\"
+                echo "❌ Deployment incomplete — some components are not running or wrong count."
+                echo "==== Dumping monitor logs ===="
+                if [ -d $HOME/chronolog-install/Release/monitor ]; then
+                  for log in $HOME/chronolog-install/Release/monitor/*; do
+                    echo "==== $log ===="
+                    cat "$log"
                   done
                 else
-                  echo 'No monitor logs found!'
+                  echo "No monitor logs found!"
                 fi
                 exit 1
               fi
-            "
+            '
