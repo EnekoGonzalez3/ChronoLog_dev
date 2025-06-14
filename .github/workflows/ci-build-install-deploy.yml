@@ -73,6 +73,18 @@ jobs:
                 exit 1
               fi
 
+              # 2. Main Binaries check
+              for exe in chronovisor_server chrono_keeper chrono_grapher chrono_player; do
+                # Existence and executable check
+                if [ ! -x ~/chronolog-install/Debug/bin/$exe ]; then
+                  echo "❌ $exe is missing or not executable in bin folder!"
+                  # missing=1
+                  continue
+                else
+                  echo "✅ $exe is present and executable."
+                fi
+              done
+
               ##################################
               # Step 5: Deploy ChronoLog
               ##################################
