@@ -39,27 +39,17 @@ jobs:
               # Step 2: Build ChronoLog
               ##################################
               echo "[2/6] Building ChronoLog from PR code..."
-              if [ -x /workspace/deploy/local_single_user_deploy.sh ]; then
-                cd /workspace/deploy
-                ./local_single_user_deploy.sh --build --build-type Release --install-dir $HOME/chronolog-install/
-                cd /workspace
-              else
-                echo "❌ Deploy script not found or not executable"
-                exit 1
-              fi
+              mkdir -p /workspace/build
+              cd /workspace/build
+              cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$HOME/spack/opt/spack -DINSTALL_DIR=$HOME/chronolog-install ..
+              make -j$(nproc)
 
               ##################################
               # Step 3: Install ChronoLog
               ##################################
               echo "[3/6] Installing ChronoLog..."
-              if [ -x /workspace/deploy/local_single_user_deploy.sh ]; then
-                cd /workspace/deploy
-                ./local_single_user_deploy.sh -i -w $HOME/chronolog-install/Release/
-                cd /workspace
-              else
-                echo "❌ Deploy script not found or not executable"
-                exit 1
-              fi
+              make install
+              cd /workspace
 
               ##################################
               # Step 4: Post-Install Verification
