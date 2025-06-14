@@ -66,7 +66,7 @@ jobs:
 
               # Check bin/ folder
               if [ -d ~/chronolog-install/Debug/bin ]; then
-                echo '✅ bin directory is found!'
+                echo '✅ bin directory found!'
                 ls -l ~/chronolog-install/Debug/bin
               else
                 echo '❌ Install failed — bin directory not found'
@@ -74,11 +74,12 @@ jobs:
               fi
               
               # 2. Main Binaries check
+              missing=0
               for exe in chronovisor_server chrono_keeper chrono_grapher chrono_player; do
                 # Existence and executable check
                 if [ ! -x ~/chronolog-install/Debug/bin/$exe ]; then
                   echo "❌ $exe is missing or not executable in bin folder!"
-                  # missing=1
+                  missing=1
                   continue
                 else
                   echo "✅ $exe is present and executable."
@@ -87,11 +88,19 @@ jobs:
                 # Dependency check
                 if ldd ~/chronolog-install/Debug/bin/$exe | grep 'not found'; then
                   echo "❌ $exe is missing one or more shared libraries!"
-                  # missing=1
+                  missing=1
                 else
                   echo "✅ $exe dependencies OK."
                 fi
               done
+
+              if [ $missing = 1 ]; then
+                echo '❌ One or more required binaries failed verification.'
+                exit 1
+              else
+                echo '✅ Install successfull! All required binaries present, executable, and dependencies resolved.'
+              fi
+
 
               ##################################
               # Step 5: Deploy ChronoLog
