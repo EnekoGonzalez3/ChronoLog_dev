@@ -86,7 +86,7 @@ jobs:
                   echo "✅ $exe is present and executable."
                 fi
                 # Dependency check
-                if ldd "${INSTALL_BASE}/bin/$exe" | grep 'not found'; then
+                if ldd "${INSTALL_BASE}/bin/$exe" | grep "not found"; then
                   echo "❌ $exe is missing one or more shared libraries!"
                   missing=1
                 else
