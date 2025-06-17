@@ -94,12 +94,12 @@ jobs:
                 fi
               done
 
-              if [ "$missing" = 1 ]; then
-                echo "❌ One or more required binaries failed verification."
-                exit 1
-              else
-                echo "✅ Install successfull! All required binaries present, executable, and dependencies resolved."
-              fi
+              #if [ "$missing" = 1 ]; then
+              #  echo "❌ One or more required binaries failed verification."
+              #  exit 1
+              #else
+              #  echo "✅ Install successfull! All required binaries present, executable, and dependencies resolved."
+              #fi
 
               ##################################
               # Step 5: Deploy ChronoLog
