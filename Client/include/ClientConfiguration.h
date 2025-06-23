@@ -3,6 +3,7 @@
 
 #include <string>
 #include <spdlog/common.h>
+#include <json-c/json.h>
 
 namespace chronolog {
 
