@@ -1,10 +1,43 @@
+#include "ClientConfiguration.h"
+#include "client_cmd_arg_parse.h"
 #include <chronolog_client.h>
+#include "chrono_monitor.h"
 #include <common.h>
 #include <cassert>
 
-int main() {
+int main(int argc, char** argv) {
+    // Parse configuration path
+    std::string conf_file_path = chronolog::parse_conf_path_arg(argc, argv);
+
+    // Load configuration
+    chronolog::ClientConfiguration confManager;
+    if (!conf_file_path.empty()) {
+        if (!confManager.load_from_file(conf_file_path)) {
+            std::cerr << "[ClientExample] Failed to load configuration." << std::endl;
+            return EXIT_FAILURE;
+        }
+    }
+
+    // Initialize logging
+    int result = chronolog::chrono_monitor::initialize(confManager.LOG_CONF.LOGTYPE,
+                                                       confManager.LOG_CONF.LOGFILE,
+                                                       confManager.LOG_CONF.LOGLEVEL,
+                                                       confManager.LOG_CONF.LOGNAME,
+                                                       confManager.LOG_CONF.LOGFILESIZE,
+                                                       confManager.LOG_CONF.LOGFILENUM,
+                                                       confManager.LOG_CONF.FLUSHLEVEL);
+    if (result == 1) {
+        return EXIT_FAILURE;
+    }
+
+    LOG_INFO("[ClientExample] Starting ChronoLog Client Example");
+
     // Configure the client connection
-    chronolog::ClientPortalServiceConf portalConf("ofi+sockets", "127.0.0.1", 5555, 55);
+    chronolog::ClientPortalServiceConf portalConf;
+    portalConf.PROTO_CONF = confManager.PORTAL_CONF.PROTO_CONF;
+    portalConf.IP = confManager.PORTAL_CONF.IP;
+    portalConf.PORT = confManager.PORTAL_CONF.PORT;
+    portalConf.PROVIDER_ID = confManager.PORTAL_CONF.PROVIDER_ID;
 
     // Create a ChronoLog client
     chronolog::Client client(portalConf);
@@ -48,5 +81,6 @@ int main() {
     ret = client.Disconnect();
     assert(ret == chronolog::CL_SUCCESS);
 
+    LOG_INFO("[ClientExample] Finished successfully");
     return 0;
 }
