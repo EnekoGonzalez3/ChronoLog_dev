@@ -75,9 +75,13 @@ jobs:
                 exit 1
               fi
               
-              # 2. Main Binaries check
+              # 2. Main Binaries check with extended logging
+              main_binaries=(chronovisor_server chrono_keeper chrono_grapher chrono_player)
               missing=0
-              for exe in chronovisor_server chrono_keeper chrono_grapher chrono_player; do
+              declare -a missing_binaries
+
+              for exe in "${main_binaries[@]}"; do
+                ldd_log="/tmp/ldd_$exe.txt"
                 # Existence and executable check
                 if [ ! -x "${INSTALL_BASE}/bin/$exe" ]; then
                   echo "❌ $exe is missing or not executable in bin folder!"
@@ -85,14 +89,30 @@ jobs:
                 else
                   echo "✅ $exe is present and executable."
                 fi
-                # Dependency check
-                if ldd "${INSTALL_BASE}/bin/$exe" | grep "not found"; then
+                # Dependency check with logging
+                echo "---- Checking dependencies for $exe ----"
+                ldd "${INSTALL_BASE}/bin/$exe" > "$ldd_log"
+                if grep "not found" "$ldd_log"; then
                   echo "❌ $exe is missing one or more shared libraries!"
+                  echo "----- ldd output for $exe -----"
+                  cat "$ldd_log"
                   missing=1
+                  missing_binaries+=("$exe")
                 else
                   echo "✅ $exe dependencies OK."
                 fi
               done
+
+              if [ "$missing" = 1 ]; then
+                echo ""
+                echo "========= SUMMARY OF ldd OUTPUTS FOR MAIN BINARIES ========="
+                for exe in "${main_binaries[@]}"; do
+                  echo "----- ldd output for $exe -----"
+                  cat "/tmp/ldd_$exe.txt" || echo "(no log found)"
+                  echo ""
+                done
+                echo "============================================================"
+              fi
 
               #if [ "$missing" = 1 ]; then
               #  echo "❌ One or more required binaries failed verification."
