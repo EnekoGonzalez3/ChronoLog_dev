@@ -65,8 +65,11 @@ jobs:
               # Step 4: Post-Install Verification
               ##################################
               echo "[4/6] Verifying install..."
+              source /opt/spack/share/spack/setup-env.sh
+              spack env activate -p .
+              echo "LD_LIBRARY_PATH is: $LD_LIBRARY_PATH"
+              echo "PATH is: $PATH"
 
-              # Check bin/ folder
               if [ -d "${INSTALL_BASE}/bin" ]; then
                 echo "✅ bin directory is found!"
                 ls -l "${INSTALL_BASE}/bin"
@@ -74,22 +77,19 @@ jobs:
                 echo "❌ Install failed — bin directory not found"
                 exit 1
               fi
-              
-              # 2. Main Binaries check with extended logging
+
               main_binaries=(chronovisor_server chrono_keeper chrono_grapher chrono_player)
               missing=0
               declare -a missing_binaries
 
               for exe in "${main_binaries[@]}"; do
                 ldd_log="/tmp/ldd_$exe.txt"
-                # Existence and executable check
                 if [ ! -x "${INSTALL_BASE}/bin/$exe" ]; then
                   echo "❌ $exe is missing or not executable in bin folder!"
                   continue
                 else
                   echo "✅ $exe is present and executable."
                 fi
-                # Dependency check with logging
                 echo "---- Checking dependencies for $exe ----"
                 ldd "${INSTALL_BASE}/bin/$exe" > "$ldd_log"
                 if grep "not found" "$ldd_log"; then
@@ -113,7 +113,6 @@ jobs:
                 done
                 echo "============================================================"
               fi
-
               #if [ "$missing" = 1 ]; then
               #  echo "❌ One or more required binaries failed verification."
               #  exit 1
