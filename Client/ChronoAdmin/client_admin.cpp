@@ -230,7 +230,7 @@ std::pair <std::string, workload_conf_args> cmd_arg_parse(int argc, char**argv)
             std::cout << "Barrier: " << (workload_args.barrier ? "true" : "false") << std::endl;
             std::cout << "Shared story: " << (workload_args.shared_story ? "true" : "false") << std::endl;
         }
-        return {};
+        return {"", workload_args};
     }
 }
 
@@ -409,8 +409,8 @@ uint64_t get_bigbang_timestamp(std::ifstream &file)
 
 int main(int argc, char**argv)
 {
-    std::string argobots_conf_str = R"({"argobots" : {"abt_mem_max_num_stacks" : 8,
-                                                      "abt_thread_stacksize" : 2097152}})";
+    std::string argobots_conf_str = R"({"argobots" : {"abt_mem_max_num_stacks" : 8
+                                                    , "abt_thread_stacksize" : 2097152}})";
     margo_set_environment(argobots_conf_str.c_str());
 
     int rank, size;
@@ -418,34 +418,36 @@ int main(int argc, char**argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    std::string default_conf_file_path = "./default_conf.json";
     std::pair<std::string, workload_conf_args> cmd_args = cmd_arg_parse(argc, argv);
     std::string conf_file_path = cmd_args.first;
     workload_conf_args workload_args = cmd_args.second;
-    if (conf_file_path.empty()) {
-        conf_file_path = default_conf_file_path;
-    }
 
-    chronolog::ClientConfiguration config;
-    if (!config.load_from_file(conf_file_path)) {
-        std::cerr << "[main] Failed to load configuration file. Exiting." << std::endl;
-        return EXIT_FAILURE;
+    chronolog::ClientConfiguration confManager;
+    if (!conf_file_path.empty()) {
+        if (!confManager.load_from_file(conf_file_path)) {
+            std::cerr << "[ClientAdmin] Failed to load configuration file '" << conf_file_path << "'. Using default values instead." << std::endl;
+        } else {
+            std::cout << "[ClientAdmin] Configuration file loaded successfully from '" << conf_file_path << "'." << std::endl;
+        }
+    } else {
+        std::cout << "[ClientAdmin] No configuration file provided. Using default values." << std::endl;
     }
+    confManager.log_configuration();
 
-    int result = chronolog::chrono_monitor::initialize(
-        config.LOG_CONF.LOGTYPE,
-        config.LOG_CONF.LOGFILE,
-        config.LOG_CONF.LOGLEVEL,
-        config.LOG_CONF.LOGNAME,
-        config.LOG_CONF.LOGFILESIZE,
-        config.LOG_CONF.LOGFILENUM,
-        config.LOG_CONF.FLUSHLEVEL
-    );
+    // Initialize logging
+    int result = chronolog::chrono_monitor::initialize(confManager.LOG_CONF.LOGTYPE,
+                                                       confManager.LOG_CONF.LOGFILE,
+                                                       confManager.LOG_CONF.LOGLEVEL,
+                                                       confManager.LOG_CONF.LOGNAME,
+                                                       confManager.LOG_CONF.LOGFILESIZE,
+                                                       confManager.LOG_CONF.LOGFILENUM,
+                                                       confManager.LOG_CONF.FLUSHLEVEL);
+
     if (result == 1) {
         exit(EXIT_FAILURE);
     }
 
-    chronolog::Client client(config.PORTAL_CONF);
+    chronolog::Client client(confManager.PORTAL_CONF);
     chronolog::StoryHandle* story_handle;
 
     TimerWrapper connectTimer(workload_args.perf_test, "Connect");
@@ -464,10 +466,10 @@ int main(int argc, char**argv)
     std::string client_id = gen_random(8);
 //    std::cout << "Generated client id: " << client_id << std::endl;
 
-    const std::string& server_protoc = config.PORTAL_CONF.PROTO_CONF;
-    const std::string& server_ip = config.PORTAL_CONF.IP;
-    std::string server_port = std::to_string(config.PORTAL_CONF.PORT);
-    std::string server_provider_id = std::to_string(config.PORTAL_CONF.PROVIDER_ID);
+    const std::string& server_protoc = confManager.PORTAL_CONF.PROTO_CONF;
+    const std::string& server_ip = confManager.PORTAL_CONF.IP;
+    std::string server_port = std::to_string(confManager.PORTAL_CONF.PORT);
+    std::string server_provider_id = std::to_string(confManager.PORTAL_CONF.PROVIDER_ID);
     std::string server_address = server_protoc + "://" + server_ip + ":" + server_port + "@" + server_provider_id;
 
     std::string username = getpwuid(getuid())->pw_name;
