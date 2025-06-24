@@ -89,17 +89,20 @@ int main(int argc, char**argv)
     std::vector <struct thread_arg> t_args(num_threads);
     std::vector <std::thread> workers(num_threads);
 
-    // Load config
+    // Load configuration
     std::string conf_file_path = chronolog::parse_conf_path_arg(argc, argv);
     chronolog::ClientConfiguration confManager;
     if (!conf_file_path.empty()) {
         if (!confManager.load_from_file(conf_file_path)) {
-            std::cerr << "[ClientLibMultiPThreadTest] Failed to load configuration." << std::endl;
-            return EXIT_FAILURE;
+            std::cerr << "[ClientLibConnectRPCTest] Failed to load configuration file '" << conf_file_path << "'. Using default values instead." << std::endl;
+        } else {
+            std::cout << "[ClientLibConnectRPCTest] Configuration file loaded successfully from '" << conf_file_path << "'." << std::endl;
         }
+    } else {
+        std::cout << "[ClientLibConnectRPCTest] No configuration file provided. Using default values." << std::endl;
     }
 
-    // Init monitor
+    // Initialize logging
     int result = chronolog::chrono_monitor::initialize(confManager.LOG_CONF.LOGTYPE,
                                                        confManager.LOG_CONF.LOGFILE,
                                                        confManager.LOG_CONF.LOGLEVEL,
@@ -107,18 +110,18 @@ int main(int argc, char**argv)
                                                        confManager.LOG_CONF.LOGFILESIZE,
                                                        confManager.LOG_CONF.LOGFILENUM,
                                                        confManager.LOG_CONF.FLUSHLEVEL);
-    if(result == 1)
-    {
-        exit(EXIT_FAILURE);
+    if (result == 1) {
+        return EXIT_FAILURE;
     }
-    LOG_INFO("[ClientLibMultiPthreadTest] Running test.");
 
-    // Portal conf from config
+    // Build portal config
     chronolog::ClientPortalServiceConf portalConf;
     portalConf.PROTO_CONF = confManager.PORTAL_CONF.PROTO_CONF;
     portalConf.IP = confManager.PORTAL_CONF.IP;
     portalConf.PORT = confManager.PORTAL_CONF.PORT;
     portalConf.PROVIDER_ID = confManager.PORTAL_CONF.PROVIDER_ID;
+
+    LOG_INFO("[ClientLibMultiPthreadTest] Running test.");
 
     client = new chronolog::Client(portalConf);
     int ret = client->Connect();

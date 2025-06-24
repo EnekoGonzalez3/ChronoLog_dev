@@ -17,9 +17,12 @@ int main(int argc, char**argv)
     chronolog::ClientConfiguration confManager;
     if (!conf_file_path.empty()) {
         if (!confManager.load_from_file(conf_file_path)) {
-            std::cerr << "[ClientLibMultiArgobotsTest] Failed to load configuration." << std::endl;
-            return EXIT_FAILURE;
+            std::cerr << "[ClientLibConnectRPCTest] Failed to load configuration file '" << conf_file_path << "'. Using default values instead." << std::endl;
+        } else {
+            std::cout << "[ClientLibConnectRPCTest] Configuration file loaded successfully from '" << conf_file_path << "'." << std::endl;
         }
+    } else {
+        std::cout << "[ClientLibConnectRPCTest] No configuration file provided. Using default values." << std::endl;
     }
 
     // Initialize logging

@@ -110,12 +110,15 @@ int main(int argc, char**argv)
     chronolog::ClientConfiguration confManager;
     if (!conf_file_path.empty()) {
         if (!confManager.load_from_file(conf_file_path)) {
-            std::cerr << "[ClientLibConnectRPCTest] Failed to load configuration." << std::endl;
-            return EXIT_FAILURE;
+            std::cerr << "[ClientLibConnectRPCTest] Failed to load configuration file '" << conf_file_path << "'. Using default values instead." << std::endl;
+        } else {
+            std::cout << "[ClientLibConnectRPCTest] Configuration file loaded successfully from '" << conf_file_path << "'." << std::endl;
         }
+    } else {
+        std::cout << "[ClientLibConnectRPCTest] No configuration file provided. Using default values." << std::endl;
     }
 
-    // Init monitor
+    // Initialize logging
     int result = chronolog::chrono_monitor::initialize(confManager.LOG_CONF.LOGTYPE,
                                                        confManager.LOG_CONF.LOGFILE,
                                                        confManager.LOG_CONF.LOGLEVEL,
@@ -123,12 +126,9 @@ int main(int argc, char**argv)
                                                        confManager.LOG_CONF.LOGFILESIZE,
                                                        confManager.LOG_CONF.LOGFILENUM,
                                                        confManager.LOG_CONF.FLUSHLEVEL);
-    if(result == 1)
-    {
-        exit(EXIT_FAILURE);
+    if (result == 1) {
+        return EXIT_FAILURE;
     }
-
-    LOG_INFO("[ClientLibMultiStorytellers] Running test.");
 
     // Build portal config
     chronolog::ClientPortalServiceConf portalConf;
@@ -136,6 +136,8 @@ int main(int argc, char**argv)
     portalConf.IP = confManager.PORTAL_CONF.IP;
     portalConf.PORT = confManager.PORTAL_CONF.PORT;
     portalConf.PROVIDER_ID = confManager.PORTAL_CONF.PROVIDER_ID;
+
+    LOG_INFO("[ClientLibMultiStorytellers] Running test.");
 
     client = new chronolog::Client(portalConf);
 

@@ -135,15 +135,17 @@ void reader_thread( int tid, struct thread_arg * t)
 
 int main(int argc, char**argv)
 {
-
     // Load configuration
     std::string conf_file_path = chronolog::parse_conf_path_arg(argc, argv);
     chronolog::ClientConfiguration confManager;
     if (!conf_file_path.empty()) {
         if (!confManager.load_from_file(conf_file_path)) {
-            std::cerr << "[ClientLibMultiArgobotsTest] Failed to load configuration." << std::endl;
-            return EXIT_FAILURE;
+            std::cerr << "[ClientLibConnectRPCTest] Failed to load configuration file '" << conf_file_path << "'. Using default values instead." << std::endl;
+        } else {
+            std::cout << "[ClientLibConnectRPCTest] Configuration file loaded successfully from '" << conf_file_path << "'." << std::endl;
         }
+    } else {
+        std::cout << "[ClientLibConnectRPCTest] No configuration file provided. Using default values." << std::endl;
     }
 
     // Initialize logging
@@ -158,15 +160,6 @@ int main(int argc, char**argv)
         return EXIT_FAILURE;
     }
 
-    bool run_hybrid_test = false;
-
-    if((argc==1) || (argc >1 && argv[1][0] == '1'))
-    { run_hybrid_test = false; }
-    else if(argc > 1 && argv[1][0] =='2')
-    { run_hybrid_test = true; }
-
-
-    LOG_INFO("[ClientLibStoryReader] Running...");
     // Build portal config
     chronolog::ClientPortalServiceConf portalConf;
     portalConf.PROTO_CONF = confManager.PORTAL_CONF.PROTO_CONF;
@@ -174,11 +167,21 @@ int main(int argc, char**argv)
     portalConf.PORT = confManager.PORTAL_CONF.PORT;
     portalConf.PROVIDER_ID = confManager.PORTAL_CONF.PROVIDER_ID;
 
+    // Build query config
     chronolog::ClientQueryServiceConf clientQueryConf;
     portalConf.PROTO_CONF = confManager.QUERY_CONF.PROTO_CONF;
     portalConf.IP = confManager.QUERY_CONF.IP;
     portalConf.PORT = confManager.QUERY_CONF.PORT;
     portalConf.PROVIDER_ID = confManager.QUERY_CONF.PROVIDER_ID;
+
+    bool run_hybrid_test = false;
+
+    if((argc==1) || (argc >1 && argv[1][0] == '1'))
+    { run_hybrid_test = false; }
+    else if(argc > 1 && argv[1][0] =='2')
+    { run_hybrid_test = true; }
+
+    LOG_INFO("[ClientLibStoryReader] Running...");
 
     client = new chronolog::Client(portalConf, clientQueryConf);
 
@@ -190,7 +193,6 @@ int main(int argc, char**argv)
         delete client;
         return -1;
     }
-
 
     std::string chronicle_name("CHRONICLE");
     std::string story_name("STORY");
