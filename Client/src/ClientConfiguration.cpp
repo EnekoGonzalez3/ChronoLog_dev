@@ -115,11 +115,11 @@ void ClientConfiguration::log_configuration() const {
     std::cout << "[LOG_CONF]" << std::endl;
     std::cout << "  type: " << LOG_CONF.LOGTYPE << std::endl;
     std::cout << "  file: " << LOG_CONF.LOGFILE << std::endl;
-    std::cout << "  level: " << spdlog::level::to_string_view(LOG_CONF.LOGLEVEL) << std::endl;
+    std::cout << "  level: " << spdlog::level::to_string_view(LOG_CONF.LOGLEVEL).data() << std::endl;
     std::cout << "  name: " << LOG_CONF.LOGNAME << std::endl;
     std::cout << "  filesize: " << LOG_CONF.LOGFILESIZE << std::endl;
     std::cout << "  filenum: " << LOG_CONF.LOGFILENUM << std::endl;
-    std::cout << "  flushlevel: " << spdlog::level::to_string_view(LOG_CONF.FLUSHLEVEL) << std::endl;
+    std::cout << "  flushlevel: " << spdlog::level::to_string_view(LOG_CONF.FLUSHLEVEL).data() << std::endl;
 }
 
 }
