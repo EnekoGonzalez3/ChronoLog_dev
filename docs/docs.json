@@ -1,0 +1,174 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "ChronoLog Docs",
+  "colors": {
+    "primary": "#16A34A",
+    "light": "#07C983",
+    "dark": "#15803D"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Getting started",
+            "pages": [
+              "guides/gettingStarted/index",
+              "guides/gettingStarted/gettingstarted",
+              "guides/gettingStarted/installation",
+              "guides/gettingStarted/configuration"
+            ]
+          },
+          {
+            "group": "Data Model",
+            "pages": [
+              "guides/dataModel/conceptualmodel",
+              "guides/dataModel/StoryPipeline"
+            ]
+          },
+          {
+            "group": "Architecture",
+            "pages": [
+              "guides/architecture/overview",
+              "guides/architecture/chronovisor",
+              "guides/architecture/chronokeeper",
+              "guides/architecture/chronographer",
+              "guides/architecture/chronoplayer"
+            ]
+          },
+          {
+            "group": "Clients",
+            "pages": [
+              "guides/deployment/local",
+              "guides/deployment/distributed"
+            ]
+          },
+          {
+            "group": "Deployment",
+            "pages": [
+              "guides/deployment/local",
+              "guides/deployment/distributed"
+            ]
+          },
+          {
+            "group": "Getting Involved",
+            "pages": [
+              "guides/gettingInvolved/contributors",
+              "guides/gettingInvolved/codeStyle"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Tutorials",
+        "groups": [
+          {
+            "group": "Local",
+            "pages": [
+              "tutorials/introduction/Quickstart"
+            ]
+          },
+          {
+            "group": "Docker",
+            "pages": [
+              "tutorials/docker/Single-node",
+              "tutorials/docker/Multi-node"
+            ]
+          },
+          {
+            "group": "Clients",
+            "pages": [
+              "tutorials/docker/Single-node",
+              "tutorials/docker/Multi-node"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API reference",
+        "groups": [
+          {
+            "group": "API documentation",
+            "pages": [
+              "api-reference/introduction"
+            ]
+          },
+          {
+            "group": "C++",
+            "pages": [
+              "api-reference/c++/connect",
+              "api-reference/c++/createChronicle",
+              "api-reference/c++/acquireStory",
+              "api-reference/c++/logEvents",
+              "api-reference/c++/replayStory",
+              "api-reference/c++/releaseStory",
+              "api-reference/c++/destroyStory",
+              "api-reference/c++/destroyChronicle",
+              "api-reference/c++/disconnect"
+            ]
+          },
+          {
+            "group": "Python",
+            "pages": [
+              "api-reference/python/connect",
+              "api-reference/python/createChronicle",
+              "api-reference/python/acquireStory",
+              "api-reference/python/logEvents",
+              "api-reference/python/replayStory",
+              "api-reference/python/releaseStory",
+              "api-reference/python/destroyStory",
+              "api-reference/python/destroyChronicle",
+              "api-reference/python/disconnect"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Repository",
+          "href": "https://github.com/grc-iit/ChronoLog",
+          "icon": "github"
+        },
+        {
+          "anchor": "Official Paper",
+          "href": "http://cs.iit.edu/~scs/assets/files/kougkas2020chronolog.pdf",
+          "icon": "file"
+        },
+        {
+          "anchor": "Gnosis Research Center",
+          "href": "https://grc.iit.edu/",
+          "icon": "building"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/logo/logo-chronolog.png",
+    "dark": "/logo/logo-chronolog.png"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "mailto:hi@mintlify.com"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://dashboard.mintlify.com"
+    }
+  },
+  "footer": {
+    "socials": {
+      "x": "https://x.com/mintlify",
+      "github": "https://github.com/mintlify",
+      "linkedin": "https://linkedin.com/company/mintlify"
+    }
+  }
+}
