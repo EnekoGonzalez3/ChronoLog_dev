@@ -49,6 +49,8 @@ USER $USERNAME
 # Set the working directory to the user's home directory
 WORKDIR /home/$USERNAME
 
+RUN echo "Checking out version: v${VERSION}"
+
 # Get ChronoLog
 RUN cd \
  && git clone https://github.com/EnekoGonzalez3/ChronoLog_dev.git chronolog_repo\
