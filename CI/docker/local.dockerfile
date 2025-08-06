@@ -54,7 +54,7 @@ RUN cd \
  && git clone https://github.com/grc-iit/ChronoLog.git chronolog_repo\
  && cd chronolog_repo \
  && git fetch --all --tags \
- && git checkout tags/v$VERSION -b release-$VERSION
+ && git checkout tags/v${VERSION} -b release-${VERSION}
 
 # Install dependencies and ChronoLog, then clean Spack
 RUN cd \
