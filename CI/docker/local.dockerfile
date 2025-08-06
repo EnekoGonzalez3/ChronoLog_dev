@@ -53,8 +53,8 @@ WORKDIR /home/$USERNAME
 RUN cd \
  && git clone https://github.com/grc-iit/ChronoLog.git chronolog_repo\
  && cd chronolog_repo \
- && git switch develop \
- && git pull
+ && git fetch --all --tags \
+ && git checkout tags/v$VERSION -b release-$VERSION
 
 # Install dependencies and ChronoLog, then clean Spack
 RUN cd \
@@ -67,11 +67,11 @@ RUN cd \
  && mkdir -p build \
  && cd build \
  && export USER=$(whoami) \
- && cmake -DCMAKE_BUILD_TYPE=Release -DINSTALL_DIR=/home/$USERNAME/chronolog_install .. \
+ && cmake -DCMAKE_BUILD_TYPE=Release -DINSTALL_DIR=/home/$USERNAME/chronolog_install/$VERSION .. \
  && make -j \
  && cd ../deploy \
  # && ./local_single_user_deploy.sh -b --install-dir ~/chronolog_install/Release \
- && ./local_single_user_deploy.sh -i --work-dir ~/chronolog_install/Release
+ && ./local_single_user_deploy.sh -i --work-dir ~/chronolog_install/$VERSION/Release
 
 # Install mpssh for distributed deployment
 RUN cd \
@@ -94,5 +94,42 @@ RUN cd \
     'export USER=grc-iit' \
     >> .bashrc
 
+# Add version metadata file
+RUN echo "$VERSION" > /home/$USERNAME/VERSION
+
+# Add helper script to print version
+RUN echo '#!/bin/bash' > /usr/local/bin/chronolog-version \
+ && echo 'cat /home/'"$USERNAME"'/VERSION' >> /usr/local/bin/chronolog-version \
+ && chmod +x /usr/local/bin/chronolog-version
+
 # Welcome message
-CMD ["/bin/bash", "-c", "echo $'+-----------------------------------------------------------------------------------------+\n| ..######..##.....##.########...#######..##....##..#######..##........#######...######.. |\n| .##....##.##.....##.##.....##.##.....##.###...##.##.....##.##.......##.....##.##....##. |\n| .##.......##.....##.##.....##.##.....##.####..##.##.....##.##.......##.....##.##....... |\n| .##.......#########.########..##.....##.##.##.##.##.....##.##.......##.....##.##...#### |\n| .##.......##.....##.##...##...##.....##.##..####.##.....##.##.......##.....##.##....##. |\n| .##....##.##.....##.##....##..##.....##.##...###.##.....##.##.......##.....##.##....##. |\n| ..######..##.....##.##.....##..#######..##....##..#######..########..#######...######.. |\n+-----------------------------------------------------------------------------------------+\n|                                Welcome to ChronoLog                                     |\n|                                                                                         |\n| ChronoLog is a cutting-edge, distributed, and tiered shared log storage ecosystem       |\n| that leverages physical time to ensure total log ordering and elastic scaling           |\n| through intelligent auto-tiering. Designed as a robust foundation for innovation,       |\n| ChronoLog supports advanced plugins including a SQL-like query engine, a streaming      |\n| processor, a log-based key-value store, and a log-based TensorFlow module.              |\n|                                                                                         |\n| Version:                                                                                |\n|   This Docker image provides a lightweight ChronoLog instance for local deployment.     |\n|   It simplifies installation and understanding of the system. For advanced              |\n|   deployment options, including production-ready configurations, please visit:          |\n|                                                                                         |\n| Useful Links:                                                                           |\n|   • Website:    https://www.chronolog.dev                                               |\n|   • Repository: https://github.com/grc-iit/ChronoLog                                    |\n|   • Wiki:       https://github.com/grc-iit/ChronoLog/wiki                               |\n|                                                                                         |\n| Thank you for choosing ChronoLog. Enjoy your session!                                   |\n+-----------------------------------------------------------------------------------------+' && exec bash"]
+CMD ["/bin/bash", "-c", "VERSION=$(cat /home/grc-iit/VERSION); echo \"\
++-----------------------------------------------------------------------------------------+\\n\
+| ..######..##.....##.########...#######..##....##..#######..##........#######...######.. |\\n\
+| .##....##.##.....##.##.....##.##.....##.###...##.##.....##.##.......##.....##.##....##. |\\n\
+| .##.......##.....##.##.....##.##.....##.####..##.##.....##.##.......##.....##.##....... |\\n\
+| .##.......#########.########..##.....##.##.##.##.##.....##.##.......##.....##.##...#### |\\n\
+| .##.......##.....##.##...##...##.....##.##..####.##.....##.##.......##.....##.##....##. |\\n\
+| .##....##.##.....##.##....##..##.....##.##...###.##.....##.##.......##.....##.##....##. |\\n\
+| ..######..##.....##.##.....##..#######..##....##..#######..########..#######...######.. |\\n\
++-----------------------------------------------------------------------------------------+\\n\
+|                             Welcome to ChronoLog $VERSION                               |\\n\
+|                                                                                         |\\n\
+| ChronoLog is a cutting-edge, distributed, and tiered shared log storage ecosystem       |\\n\
+| that leverages physical time to ensure total log ordering and elastic scaling           |\\n\
+| through intelligent auto-tiering. Designed as a robust foundation for innovation,       |\\n\
+| ChronoLog supports advanced plugins including a SQL-like query engine, a streaming      |\\n\
+| processor, a log-based key-value store, and a log-based TensorFlow module.              |\\n\
+|                                                                                         |\\n\
+| Version:                                                                                |\\n\
+|   This Docker image provides a lightweight ChronoLog instance for local deployment.     |\\n\
+|   It simplifies installation and understanding of the system. For advanced              |\\n\
+|   deployment options, including production-ready configurations, please visit:          |\\n\
+|                                                                                         |\\n\
+| Useful Links:                                                                           |\\n\
+|   • Website:    https://www.chronolog.dev                                               |\\n\
+|   • Repository: https://github.com/grc-iit/ChronoLog                                    |\\n\
+|   • Wiki:       https://github.com/grc-iit/ChronoLog/wiki                               |\\n\
+|                                                                                         |\\n\
+| Thank you for choosing ChronoLog. Enjoy your session!                                   |\\n\
++-----------------------------------------------------------------------------------------+\" && exec bash"]
