@@ -51,7 +51,7 @@ WORKDIR /home/$USERNAME
 
 # Get ChronoLog
 RUN cd \
- && git clone https://github.com/grc-iit/ChronoLog.git chronolog_repo\
+ && git clone https://github.com/EnekoGonzalez3/ChronoLog_dev.git chronolog_repo\
  && cd chronolog_repo \
  && git fetch --all --tags \
  && git checkout tags/v${VERSION} -b release-${VERSION}
