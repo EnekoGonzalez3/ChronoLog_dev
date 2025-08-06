@@ -5,6 +5,10 @@ SHELL ["/bin/bash", "-c"]
 ARG USERNAME=grc-iit
 ARG UID=1001
 
+ARG VERSION
+ENV CHRONOLOG_VERSION=$VERSION
+LABEL version=$VERSION
+
 # Set noninteractive frontend
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DEBCONF_NOWARNINGS=yes

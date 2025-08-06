@@ -37,6 +37,7 @@ jobs:
           file: .github/docker/dockerfile
           platforms: linux/amd64
           push: true
+          build-args: VERSION=${{ env.VERSION }}
           tags: ghcr.io/${{ env.GHCR_OWNER }}/chronolog:${{ env.VERSION }}-amd64
 
       ############################################
@@ -49,6 +50,7 @@ jobs:
           file: .github/docker/dockerfile
           platforms: linux/arm64
           push: true
+          build-args: VERSION=${{ env.VERSION }}
           tags: ghcr.io/${{ env.GHCR_OWNER }}/chronolog:${{ env.VERSION }}-arm64
 
       ############################################
@@ -61,6 +63,7 @@ jobs:
           file: .github/docker/dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
+          build-args: VERSION=${{ env.VERSION }}
           tags: |
             ghcr.io/${{ env.GHCR_OWNER }}/chronolog:${{ env.VERSION }}
             ghcr.io/${{ env.GHCR_OWNER }}/chronolog:latest
