@@ -34,7 +34,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: .github/docker/dockerfile
+          file: CI/docker/local.dockerfile
           platforms: linux/amd64
           push: true
           build-args: VERSION=${{ env.VERSION }}
@@ -47,7 +47,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: .github/docker/dockerfile
+          file: CI/docker/local.dockerfile
           platforms: linux/arm64
           push: true
           build-args: VERSION=${{ env.VERSION }}
@@ -60,7 +60,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: .github/docker/dockerfile
+          file: CI/docker/local.dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           build-args: VERSION=${{ env.VERSION }}
