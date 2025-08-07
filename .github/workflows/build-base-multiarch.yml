@@ -1,5 +1,5 @@
 # .github/workflows/build-base-amd64.yml
-name: Build ChronoLog Base AMD64 Image
+name: Build ChronoLog Base MultiArch Image
 
 on:
   workflow_dispatch:
