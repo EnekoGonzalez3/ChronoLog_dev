@@ -1,0 +1,59 @@
+# Dockerfile
+FROM chronolog-base:latest
+
+SHELL ["/bin/bash", "-c"]
+
+ARG USERNAME=grc-iit
+ARG VERSION
+ENV CHRONOLOG_VERSION=$VERSION
+LABEL version=$VERSION
+
+USER $USERNAME
+WORKDIR /home/$USERNAME
+
+RUN echo "Checking out version: ${VERSION}"
+
+# Clone ChronoLog
+RUN git clone https://github.com/EnekoGonzalez3/ChronoLog_dev.git chronolog_repo \
+ && cd chronolog_repo \
+ && git fetch --all --tags \
+ && git checkout tags/${VERSION} -b release-${VERSION}
+
+# Install dependencies and build
+RUN git clone --branch v0.21.2 https://github.com/spack/spack.git \
+ && export SPACK_ROOT=$(pwd)/spack \
+ && source spack/share/spack/setup-env.sh \
+ && cd chronolog_repo \
+ && spack env activate -p . \
+ && spack install -v > spack_build.log 2>&1 \
+ && mkdir -p build && cd build \
+ && export USER=$(whoami) \
+ && cmake -DCMAKE_BUILD_TYPE=Release -DINSTALL_DIR=/home/$USERNAME/chronolog_install/$VERSION .. \
+ && make -j \
+ && cd ../deploy \
+ && ./local_single_user_deploy.sh -i --work-dir ~/chronolog_install/$VERSION/Release
+
+# Add version metadata
+RUN echo "$VERSION" > /home/$USERNAME/VERSION \
+ && echo '#!/bin/bash' > /usr/local/bin/chronolog-version \
+ && echo 'cat /home/'"$USERNAME"'/VERSION' >> /usr/local/bin/chronolog-version \
+ && chmod +x /usr/local/bin/chronolog-version
+
+# Welcome banner
+CMD ["/bin/bash", "-c", "VERSION=$(cat /home/grc-iit/VERSION); echo \"\
++-----------------------------------------------------------------------------------------+\\n\
+| ..######..##.....##.########...#######..##....##..#######..##........#######...######.. |\\n\
+| .##....##.##.....##.##.....##.##.....##.###...##.##.....##.##.......##.....##.##....##. |\\n\
+| .##.......##.....##.##.....##.##.....##.####..##.##.....##.##.......##.....##.##....... |\\n\
+| .##.......#########.########..##.....##.##.##.##.##.....##.##.......##.....##.##...#### |\\n\
+| .##.......##.....##.##...##...##.....##.##..####.##.....##.##.......##.....##.##....##. |\\n\
+| .##....##.##.....##.##....##..##.....##.##...###.##.....##.##.......##.....##.##....##. |\\n\
+| ..######..##.....##.##.....##..#######..##....##..#######..########..#######...######.. |\\n\
++-----------------------------------------------------------------------------------------+\\n\
+|                             Welcome to ChronoLog $VERSION                               |\\n\
+|                                                                                         |\\n\
+| Useful Links:                                                                           |\\n\
+|   • Website:    https://www.chronolog.dev                                               |\\n\
+|   • Repository: https://github.com/grc-iit/ChronoLog                                    |\\n\
+|   • Wiki:       https://github.com/grc-iit/ChronoLog/wiki                               |\\n\
++-----------------------------------------------------------------------------------------+\" && exec bash"]

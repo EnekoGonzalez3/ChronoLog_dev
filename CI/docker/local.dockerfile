@@ -65,7 +65,7 @@ RUN cd \
  && source spack/share/spack/setup-env.sh \
  && cd chronolog_repo \
  && spack env activate -p . \
- && spack install -v \
+ && spack install -v > spack_build.log 2>&1 \
  && mkdir -p build \
  && cd build \
  && export USER=$(whoami) \

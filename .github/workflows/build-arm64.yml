@@ -1,11 +1,14 @@
 name: Build ARM64 Image
 
 on:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: ["Build ChronoLog Base Image"]
+    types:
+      - completed
 
 jobs:
   build-arm64:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -22,19 +25,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract version from tag and normalize owner
+      - name: Extract version from base image tag
         run: |
-          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "VERSION=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_ENV
           echo "GHCR_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
 
       - name: Build & Push ARM64 image
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: CI/docker/local.dockerfile
+          file: .github/docker/Dockerfile.chronolog
           platforms: linux/arm64
           push: true
-          build-args: VERSION=${{ env.VERSION }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ env.VERSION }}
+            BASE_IMAGE=ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:${{ env.VERSION }}
           tags: ghcr.io/${{ env.GHCR_OWNER }}/chronolog:${{ env.VERSION }}-arm64

@@ -38,6 +38,8 @@ jobs:
           platforms: linux/amd64
           push: true
           build-args: VERSION=${{ env.VERSION }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: ghcr.io/${{ env.GHCR_OWNER }}/chronolog:${{ env.VERSION }}-amd64
 
       ############################################
@@ -51,6 +53,8 @@ jobs:
           platforms: linux/arm64
           push: true
           build-args: VERSION=${{ env.VERSION }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: ghcr.io/${{ env.GHCR_OWNER }}/chronolog:${{ env.VERSION }}-arm64
 
       ############################################
@@ -64,6 +68,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           build-args: VERSION=${{ env.VERSION }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             ghcr.io/${{ env.GHCR_OWNER }}/chronolog:${{ env.VERSION }}
             ghcr.io/${{ env.GHCR_OWNER }}/chronolog:latest
