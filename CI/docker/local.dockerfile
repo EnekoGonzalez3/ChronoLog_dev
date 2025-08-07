@@ -56,7 +56,7 @@ RUN cd \
  && git clone https://github.com/EnekoGonzalez3/ChronoLog_dev.git chronolog_repo\
  && cd chronolog_repo \
  && git fetch --all --tags \
- && git checkout tags/v${VERSION} -b release-${VERSION}
+ && git checkout tags/${VERSION} -b release-${VERSION}
 
 # Install dependencies and ChronoLog, then clean Spack
 RUN cd \
