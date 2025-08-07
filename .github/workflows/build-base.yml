@@ -37,4 +37,6 @@ jobs:
           push: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:${{ env.VERSION }}
+          tags: 
+            ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:${{ env.VERSION }}
+            ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:latest
