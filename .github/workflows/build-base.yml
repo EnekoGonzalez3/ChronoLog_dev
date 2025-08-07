@@ -24,7 +24,9 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract version from tag
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        run: |
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "GHCR_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
 
       - name: Build & Push base image
         uses: docker/build-push-action@v5
@@ -35,4 +37,4 @@ jobs:
           push: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: ghcr.io/${{ github.repository_owner }}/chronolog-base:${{ env.VERSION }}
+          tags: ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:${{ env.VERSION }}
