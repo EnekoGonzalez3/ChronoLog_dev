@@ -1,4 +1,4 @@
-# Dockerfile.base
+# .github/docker/Dockerfile.base2
 FROM ubuntu:22.04
 
 SHELL ["/bin/bash", "-c"]
@@ -6,19 +6,17 @@ SHELL ["/bin/bash", "-c"]
 ARG USERNAME=grc-iit
 ARG UID=1001
 
-# Set environment
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DEBCONF_NOWARNINGS=yes
 ENV TZ=America/Chicago
 
-# Install system packages
-RUN apt-get update \
- && apt-get -y install \
+# Install system packages (pssh via pip)
+RUN apt-get update && apt-get install -y \
     gcc g++ automake cmake libtool pkgconf \
     libjson-c-dev libboost-dev libcereal-dev \
     git vim fuse sudo curl wget \
     libfuse-dev libssl-dev \
-    python3-dev bzip2 xz-utils jq net-tools lsof htop pssh bind9-dnsutils \
+    python3-dev python3-pip bzip2 xz-utils jq net-tools lsof htop bind9-dnsutils \
     openssh-server \
  && printf '%s\n' \
     'PermitRootLogin yes' \
@@ -29,7 +27,8 @@ RUN apt-get update \
  && printf '%s\n' \
     'Host *' \
     '    StrictHostKeyChecking no' \
-    > /etc/ssh/ssh_config.d/ignore-host-key.conf
+    > /etc/ssh/ssh_config.d/ignore-host-key.conf \
+ && pip3 install pssh
 
 # Create user
 RUN id $UID && userdel $(id -un $UID) || : \
@@ -37,15 +36,10 @@ RUN id $UID && userdel $(id -un $UID) || : \
  && echo "$USERNAME ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers.d/$USERNAME \
  && passwd -d $USERNAME
 
-# Set user and workdir
 USER $USERNAME
 WORKDIR /home/$USERNAME
 
-# Source spack and env vars in shell
 RUN printf '%s\n' \
     'source ~/spack/share/spack/setup-env.sh' \
     'export USER=grc-iit' \
     >> ~/.bashrc
-    
-# Install pssh instead of mpssh for parallel SSH execution
-RUN apt-get update && apt-get install -y pssh
