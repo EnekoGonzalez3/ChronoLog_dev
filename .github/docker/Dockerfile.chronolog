@@ -21,24 +21,46 @@ RUN git clone https://github.com/EnekoGonzalez3/ChronoLog_dev.git chronolog_repo
  && git checkout tags/${VERSION} -b release-${VERSION}
 
 # Build and install ChronoLog
-RUN echo "=== Setting up Spack environment ===" \
+RUN echo "=== BUILD STARTED AT: $(date) ===" \
+ && echo "=== SYSTEM INFO ===" \
+ && echo "CPU info:" && nproc && cat /proc/cpuinfo | grep "model name" | head -1 \
+ && echo "Memory info:" && free -h \
+ && echo "Disk info:" && df -h \
+ && echo "=== Setting up Spack environment ===" \
  && export SPACK_ROOT=~/spack \
  && source ~/spack/share/spack/setup-env.sh \
  && echo "=== Activating chronolog-env ===" \
  && spack env activate chronolog-env \
- && echo "=== Spack environment activated, listing packages ===" \
+ && echo "=== Spack environment activated at: $(date) ===" \
+ && echo "=== Listing installed packages ===" \
  && spack find \
- && echo "=== Starting ChronoLog build ===" \
+ && echo "=== Environment variables ===" \
+ && env | grep -E "(SPACK|CMAKE|CC|CXX)" \
+ && echo "=== Starting ChronoLog build at: $(date) ===" \
  && cd chronolog_repo \
+ && echo "=== Repository info ===" \
+ && pwd && ls -la \
+ && git log --oneline -5 \
+ && echo "=== Creating build directory at: $(date) ===" \
  && mkdir -p build && cd build \
  && export USER=$(whoami) \
- && echo "=== Running CMake ===" \
+ && echo "=== Running CMake at: $(date) ===" \
+ && echo "Memory before CMake:" && free -h \
  && cmake -DCMAKE_BUILD_TYPE=Release -DINSTALL_DIR=/home/$USERNAME/chronolog_install/$VERSION .. \
- && echo "=== Running make ===" \
- && make -j \
- && echo "=== Running deployment ===" \
+ && echo "=== CMake completed at: $(date) ===" \
+ && echo "=== CMake generated files ===" \
+ && ls -la \
+ && echo "=== Running make at: $(date) ===" \
+ && echo "Memory before make:" && free -h \
+ && echo "Starting make with limited parallelism..." \
+ && make -j2 VERBOSE=1 \
+ && echo "=== Make completed at: $(date) ===" \
+ && echo "Memory after make:" && free -h \
+ && echo "=== Running deployment at: $(date) ===" \
  && cd ../deploy \
- && ./local_single_user_deploy.sh -i --work-dir ~/chronolog_install/$VERSION/Release
+ && ls -la \
+ && ./local_single_user_deploy.sh -i --work-dir ~/chronolog_install/$VERSION/Release \
+ && echo "=== BUILD COMPLETED AT: $(date) ==="
 
 # Add version metadata
 RUN echo "$VERSION" > /home/$USERNAME/VERSION \

@@ -1,15 +1,21 @@
-name: Build AMD64 Image
+name: Build AMD64 Image (Temporary Debug)
 
 on:
-  workflow_dispatch: 
-  workflow_run:
-    workflows: ["Build ChronoLog Base AMD64 Image"]
-    types:
-      - completed
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag to build'
+        required: true
+        default: 'v1.0.0'
+        type: string
+      base_image_tag:
+        description: 'Base image tag to use'
+        required: false
+        default: 'latest'
+        type: string
 
 jobs:
-  build-amd64:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  build-amd64-temp:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,10 +32,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract version from base image tag
+      - name: Set environment variables
         run: |
-          echo "VERSION=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_ENV
+          echo "VERSION=${{ inputs.version }}" >> $GITHUB_ENV
           echo "GHCR_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+          echo "BASE_TAG=${{ inputs.base_image_tag }}" >> $GITHUB_ENV
 
       - name: Debug GitHub Actions Environment
         run: |
@@ -40,6 +47,8 @@ jobs:
           echo "Run ID: $GITHUB_RUN_ID"
           echo "Run Number: $GITHUB_RUN_NUMBER"
           echo "Job: $GITHUB_JOB"
+          echo "Version: ${{ env.VERSION }}"
+          echo "Base Image Tag: ${{ env.BASE_TAG }}"
           echo "=== System Resources ==="
           echo "CPU Info:"
           nproc
@@ -52,6 +61,21 @@ jobs:
           docker version
           docker system df
           echo "=== Build Start Time: $(date) ==="
+
+      - name: Check Base Image Availability
+        run: |
+          echo "=== Checking Base Image ==="
+          BASE_IMAGE="ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:${{ env.BASE_TAG }}"
+          echo "Base image: $BASE_IMAGE"
+          if docker manifest inspect "$BASE_IMAGE" > /dev/null 2>&1; then
+            echo "✅ Base image exists and is accessible"
+            docker manifest inspect "$BASE_IMAGE"
+          else
+            echo "❌ Base image not found or not accessible"
+            echo "Available tags:"
+            # Try to list available tags (this might not work due to permissions)
+            curl -s "https://ghcr.io/v2/${{ env.GHCR_OWNER }}/chronolog-base/tags/list" || echo "Could not list tags"
+          fi
 
       - name: Monitor Resources (Background)
         run: |
@@ -79,8 +103,10 @@ jobs:
           no-cache: true
           build-args: |
             VERSION=${{ env.VERSION }}
-            BASE_IMAGE=ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:latest
-          tags: ghcr.io/${{ env.GHCR_OWNER }}/chronolog:${{ env.VERSION }}-amd64
+            BASE_IMAGE=ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:${{ env.BASE_TAG }}
+          tags: |
+            ghcr.io/${{ env.GHCR_OWNER }}/chronolog:${{ env.VERSION }}-amd64-temp
+            ghcr.io/${{ env.GHCR_OWNER }}/chronolog:temp-latest
 
       - name: Post-build Debug Info
         if: always()
@@ -92,3 +118,13 @@ jobs:
           docker system df
           echo "=== Docker processes ==="
           docker ps -a
+          echo "=== Killing background monitor ==="
+          if [ ! -z "$MONITOR_PID" ]; then
+            kill $MONITOR_PID 2>/dev/null || echo "Monitor process already stopped"
+          fi
+
+      - name: Test Built Image (if successful)
+        if: success()
+        run: |
+          echo "=== Testing Built Image ==="
+          docker run --rm ghcr.io/${{ env.GHCR_OWNER }}/chronolog:temp-latest chronolog-version
