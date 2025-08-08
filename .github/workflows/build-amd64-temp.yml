@@ -36,61 +36,6 @@ jobs:
         run: |
           echo "VERSION=${{ inputs.version }}" >> $GITHUB_ENV
           echo "GHCR_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
-          echo "BASE_TAG=${{ inputs.base_image_tag }}" >> $GITHUB_ENV
-
-      - name: Debug GitHub Actions Environment
-        run: |
-          echo "=== GitHub Actions Environment Debug ==="
-          echo "Runner OS: $RUNNER_OS"
-          echo "Runner Architecture: $RUNNER_ARCH"
-          echo "Workflow: $GITHUB_WORKFLOW"
-          echo "Run ID: $GITHUB_RUN_ID"
-          echo "Run Number: $GITHUB_RUN_NUMBER"
-          echo "Job: $GITHUB_JOB"
-          echo "Version: ${{ env.VERSION }}"
-          echo "Base Image Tag: ${{ env.BASE_TAG }}"
-          echo "=== System Resources ==="
-          echo "CPU Info:"
-          nproc
-          cat /proc/cpuinfo | grep "model name" | head -1
-          echo "Memory Info:"
-          free -h
-          echo "Disk Info:"
-          df -h
-          echo "Docker Info:"
-          docker version
-          docker system df
-          echo "=== Build Start Time: $(date) ==="
-
-      - name: Check Base Image Availability
-        run: |
-          echo "=== Checking Base Image ==="
-          BASE_IMAGE="ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:${{ env.BASE_TAG }}"
-          echo "Base image: $BASE_IMAGE"
-          if docker manifest inspect "$BASE_IMAGE" > /dev/null 2>&1; then
-            echo "✅ Base image exists and is accessible"
-            docker manifest inspect "$BASE_IMAGE"
-          else
-            echo "❌ Base image not found or not accessible"
-            echo "Available tags:"
-            # Try to list available tags (this might not work due to permissions)
-            curl -s "https://ghcr.io/v2/${{ env.GHCR_OWNER }}/chronolog-base/tags/list" || echo "Could not list tags"
-          fi
-
-      - name: Monitor Resources (Background)
-        run: |
-          # Start resource monitoring in background
-          (
-            while true; do
-              echo "=== $(date): Resource Monitor ==="
-              echo "Memory: $(free -h | grep Mem)"
-              echo "CPU Load: $(uptime)"
-              echo "Disk: $(df -h / | tail -1)"
-              sleep 30
-            done
-          ) &
-          echo "Resource monitoring started with PID: $!"
-          echo "MONITOR_PID=$!" >> $GITHUB_ENV
 
       - name: Build & Push AMD64 image
         uses: docker/build-push-action@v5
@@ -103,28 +48,7 @@ jobs:
           no-cache: true
           build-args: |
             VERSION=${{ env.VERSION }}
-            BASE_IMAGE=ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:${{ env.BASE_TAG }}
+            BASE_IMAGE=ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:latest
           tags: |
-            ghcr.io/${{ env.GHCR_OWNER }}/chronolog:${{ env.VERSION }}-amd64-temp
-            ghcr.io/${{ env.GHCR_OWNER }}/chronolog:temp-latest
-
-      - name: Post-build Debug Info
-        if: always()
-        run: |
-          echo "=== Build End Time: $(date) ==="
-          echo "=== Final System Resources ==="
-          free -h
-          df -h
-          docker system df
-          echo "=== Docker processes ==="
-          docker ps -a
-          echo "=== Killing background monitor ==="
-          if [ ! -z "$MONITOR_PID" ]; then
-            kill $MONITOR_PID 2>/dev/null || echo "Monitor process already stopped"
-          fi
-
-      - name: Test Built Image (if successful)
-        if: success()
-        run: |
-          echo "=== Testing Built Image ==="
-          docker run --rm ghcr.io/${{ env.GHCR_OWNER }}/chronolog:temp-latest chronolog-version
+            ghcr.io/${{ env.GHCR_OWNER }}/chronolog:${{ env.VERSION }}-amd64
+            ghcr.io/${{ env.GHCR_OWNER }}/chronolog:latest
