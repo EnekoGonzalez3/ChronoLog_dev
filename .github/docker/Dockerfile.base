@@ -41,10 +41,23 @@ RUN id $UID && userdel $(id -un $UID) || : \
 USER $USERNAME
 WORKDIR /home/$USERNAME
 
+# Copy spack environment file
+COPY spack.yaml /home/$USERNAME/
+
+# Install Spack and setup environment
+RUN git clone --branch v0.21.2 https://github.com/spack/spack.git \
+ && export SPACK_ROOT=$(pwd)/spack \
+ && source spack/share/spack/setup-env.sh \
+ && spack env create chronolog-env spack.yaml \
+ && spack env activate chronolog-env \
+ && spack install -v
+
 # Source spack and env vars in shell
 RUN printf '%s\n' \
+    'export SPACK_ROOT=~/spack' \
     'source ~/spack/share/spack/setup-env.sh' \
     'export USER=grc-iit' \
+    'spack env activate chronolog-env' \
     >> ~/.bashrc
 
 # Install mpssh for distributed deployment
