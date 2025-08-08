@@ -21,7 +21,10 @@ RUN git clone https://github.com/EnekoGonzalez3/ChronoLog_dev.git chronolog_repo
  && git checkout tags/${VERSION} -b release-${VERSION}
 
 # Build and install ChronoLog
-RUN cd chronolog_repo \
+RUN export SPACK_ROOT=~/spack \
+ && source ~/spack/share/spack/setup-env.sh \
+ && spack env activate chronolog-env \
+ && cd chronolog_repo \
  && mkdir -p build && cd build \
  && export USER=$(whoami) \
  && cmake -DCMAKE_BUILD_TYPE=Release -DINSTALL_DIR=/home/$USERNAME/chronolog_install/$VERSION .. \
