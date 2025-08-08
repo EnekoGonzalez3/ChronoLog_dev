@@ -30,9 +30,18 @@ RUN echo "=== BUILD STARTED AT: $(date) ===" \
  && mkdir -p build && cd build \
  && export USER=$(whoami) \
  && echo "=== Running CMake ===" \
- && cmake -DCMAKE_BUILD_TYPE=Release -DINSTALL_DIR=/home/$USERNAME/chronolog_install/$VERSION .. \
- && echo "=== Running make ===" \
- && make -j \
+ && cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DINSTALL_DIR=/home/$USERNAME/chronolog_install/$VERSION \
+    -DCMAKE_CXX_FLAGS="-O2" \
+    -DBUILD_TESTING=OFF \
+    -DBUILD_EXAMPLES=OFF \
+    .. \
+ && echo "=== Running make with limited parallelism ===" \
+ && nproc_half=$(( $(nproc) / 2 )) \
+ && make -j${nproc_half} \
+    VERBOSE=1 \
+    CMAKE_BUILD_PARALLEL_LEVEL=${nproc_half} \
  && echo "=== Running deployment ===" \
  && cd ../deploy \
  && ./local_single_user_deploy.sh -i --work-dir ~/chronolog_install/$VERSION/Release \
