@@ -37,8 +37,7 @@ jobs:
           file: .github/docker/Dockerfile.chronolog
           platforms: linux/amd64
           push: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          no-cache: true
           build-args: |
             VERSION=${{ env.VERSION }}
             BASE_IMAGE=ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:latest
