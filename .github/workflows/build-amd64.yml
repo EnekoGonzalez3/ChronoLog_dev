@@ -11,12 +11,6 @@ jobs:
   build-amd64:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30  # Increase timeout to 30 minutes
-    
-    # Request more resources
-    env:
-      DOCKER_BUILDKIT_MEMORY: 4g
-      DOCKER_BUILDKIT_SWAP: 2g
 
     steps:
       - name: Checkout code
@@ -37,43 +31,6 @@ jobs:
           echo "VERSION=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_ENV
           echo "GHCR_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
 
-      - name: Debug GitHub Actions Environment
-        run: |
-          echo "=== GitHub Actions Environment Debug ==="
-          echo "Runner OS: $RUNNER_OS"
-          echo "Runner Architecture: $RUNNER_ARCH"
-          echo "Workflow: $GITHUB_WORKFLOW"
-          echo "Run ID: $GITHUB_RUN_ID"
-          echo "Run Number: $GITHUB_RUN_NUMBER"
-          echo "Job: $GITHUB_JOB"
-          echo "=== System Resources ==="
-          echo "CPU Info:"
-          nproc
-          cat /proc/cpuinfo | grep "model name" | head -1
-          echo "Memory Info:"
-          free -h
-          echo "Disk Info:"
-          df -h
-          echo "Docker Info:"
-          docker version
-          docker system df
-          echo "=== Build Start Time: $(date) ==="
-
-      - name: Monitor Resources (Background)
-        run: |
-          # Start resource monitoring in background
-          (
-            while true; do
-              echo "=== $(date): Resource Monitor ==="
-              echo "Memory: $(free -h | grep Mem)"
-              echo "CPU Load: $(uptime)"
-              echo "Disk: $(df -h / | tail -1)"
-              sleep 30
-            done
-          ) &
-          echo "Resource monitoring started with PID: $!"
-          echo "MONITOR_PID=$!" >> $GITHUB_ENV
-
       - name: Build & Push AMD64 image
         uses: docker/build-push-action@v5
         timeout-minutes: 60
@@ -87,15 +44,6 @@ jobs:
           build-args: |
             VERSION=${{ env.VERSION }}
             BASE_IMAGE=ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:latest
-          tags: ghcr.io/${{ env.GHCR_OWNER }}/chronolog:${{ env.VERSION }}-amd64
-
-      - name: Post-build Debug Info
-        if: always()
-        run: |
-          echo "=== Build End Time: $(date) ==="
-          echo "=== Final System Resources ==="
-          free -h
-          df -h
-          docker system df
-          echo "=== Docker processes ==="
-          docker ps -a
+          tags: |
+            ghcr.io/${{ env.GHCR_OWNER }}/chronolog:${{ env.VERSION }}-amd64
+            ghcr.io/${{ env.GHCR_OWNER }}/chronolog:latest
