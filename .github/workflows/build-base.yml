@@ -1,5 +1,5 @@
-# .github/workflows/build-base-amd64.yml
-name: Build ChronoLog Base MultiArch Image
+# .github/workflows/build-base.yml
+name: Build ChronoLog Base Image
 
 on:
   workflow_dispatch:
@@ -32,7 +32,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: .github/docker/Dockerfile.base2
+          file: .github/docker/Dockerfile.base
           platforms: linux/amd64,linux/arm64
           push: true
           cache-from: type=gha

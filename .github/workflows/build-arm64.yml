@@ -32,6 +32,7 @@ jobs:
 
       - name: Build & Push ARM64 image
         uses: docker/build-push-action@v5
+        timeout-minutes: 60
         with:
           context: .
           file: .github/docker/Dockerfile.chronolog
@@ -42,4 +43,5 @@ jobs:
           build-args: |
             VERSION=${{ env.VERSION }}
             BASE_IMAGE=ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:latest
-          tags: ghcr.io/${{ env.GHCR_OWNER }}/chronolog:${{ env.VERSION }}-arm64
+          tags: |
+            ghcr.io/${{ env.GHCR_OWNER }}/chronolog:${{ env.VERSION }}-amd64
