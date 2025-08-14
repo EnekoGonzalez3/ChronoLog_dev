@@ -1,16 +1,13 @@
-name: Build ARM64 Image
+# .github/workflows/build-base.yml
+name: Build ChronoLog Base ARM64 Image
 
 on:
-  workflow_run:
-    workflows: ["Build ChronoLog Base ARM64 Image"]
-    types:
-      - completed
+  release:
+    types: [published]
 
 jobs:
-  build-arm64:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  build-base:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -25,23 +22,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract version from base image tag
+      - name: Extract version from tag
         run: |
-          echo "VERSION=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_ENV
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           echo "GHCR_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
 
-      - name: Build & Push ARM64 image
+      - name: Build & Push base image
         uses: docker/build-push-action@v5
-        timeout-minutes: 60
         with:
           context: .
-          file: .github/docker/Dockerfile.chronolog
+          file: .github/docker/Dockerfile.base
           platforms: linux/arm64
           push: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            VERSION=${{ env.VERSION }}
-            BASE_IMAGE=ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:latest
           tags: |
-            ghcr.io/${{ env.GHCR_OWNER }}/chronolog:${{ env.VERSION }}-amd64
+            ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:${{ env.VERSION }}
+            ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:latest

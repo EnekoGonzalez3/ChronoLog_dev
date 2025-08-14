@@ -2,7 +2,7 @@ name: Build AMD64 Image
 
 on:
   workflow_run:
-    workflows: ["Build ChronoLog Base Image"]
+    workflows: ["Build ChronoLog Base AMD64 Image"]
     types:
       - completed
 
