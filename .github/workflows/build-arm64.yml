@@ -42,6 +42,6 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             VERSION=${{ env.VERSION }}
-            BASE_IMAGE=ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:latest
+            BASE_IMAGE=ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base-arm64:latest
           tags: |
-            ghcr.io/${{ env.GHCR_OWNER }}/chronolog:${{ env.VERSION }}-amd64
+            ghcr.io/${{ env.GHCR_OWNER }}/chronolog:${{ env.VERSION }}-arm64

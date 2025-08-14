@@ -5,6 +5,10 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-base:
     runs-on: ubuntu-latest
@@ -37,5 +41,5 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: |
-            ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:${{ env.VERSION }}
-            ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base:latest
+            ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base-amd64:${{ env.VERSION }}
+            ghcr.io/${{ env.GHCR_OWNER }}/chronolog-base-amd64:latest
